@@ -6,6 +6,7 @@ import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
 import { storage } from "./storage";
 import { User as SelectUser } from "@shared/schema";
+import { z } from "zod";
 
 declare global {
   namespace Express {
@@ -27,6 +28,11 @@ async function comparePasswords(supplied: string, stored: string) {
   const suppliedBuf = (await scryptAsync(supplied, salt, 64)) as Buffer;
   return timingSafeEqual(hashedBuf, suppliedBuf);
 }
+
+const googleLoginSchema = z.object({
+  uid: z.string(),
+  email: z.string().email(),
+});
 
 export function setupAuth(app: Express) {
   const sessionSettings: session.SessionOptions = {
@@ -92,5 +98,27 @@ export function setupAuth(app: Express) {
   app.get("/api/user", (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     res.json(req.user);
+  });
+
+  app.post("/api/google-login", async (req, res) => {
+    const parsed = googleLoginSchema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json(parsed.error);
+    }
+
+    const { uid, email } = parsed.data;
+    let user = await storage.getUserByUsername(uid);
+
+    if (!user) {
+      user = await storage.createUser({
+        username: uid,
+        password: randomBytes(32).toString('hex'),
+      });
+    }
+
+    req.login(user, (err) => {
+      if (err) return res.status(500).json({ message: err.message });
+      res.json(user);
+    });
   });
 }
