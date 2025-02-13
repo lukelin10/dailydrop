@@ -3,12 +3,14 @@ import { Button } from "@/components/ui/button";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Entry } from "@shared/schema";
 import Editor from "@/components/editor";
-import { Loader2, LogOut } from "lucide-react";
+import { Loader2, LogOut, Share2 } from "lucide-react";
 import { useState } from "react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { useToast } from "@/hooks/use-toast";
 
 export default function HomePage() {
   const { user, logoutMutation } = useAuth();
+  const { toast } = useToast();
   const [showFeed, setShowFeed] = useState(false);
 
   const { data: entries = [], isLoading: entriesLoading } = useQuery<Entry[]>({
@@ -33,6 +35,24 @@ export default function HomePage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/entries"] });
       setShowFeed(true);
+    },
+  });
+
+  const shareEntryMutation = useMutation({
+    mutationFn: async ({ id, isPublic }: { id: number; isPublic: boolean }) => {
+      const res = await apiRequest("PATCH", `/api/entries/${id}/share`, { isPublic });
+      return res.json();
+    },
+    onSuccess: (entry: Entry) => {
+      queryClient.invalidateQueries({ queryKey: ["/api/entries"] });
+      if (entry.isPublic && entry.shareId) {
+        const shareUrl = `${window.location.origin}/shared/${entry.shareId}`;
+        navigator.clipboard.writeText(shareUrl);
+        toast({
+          title: "Share link copied!",
+          description: "The link to your entry has been copied to your clipboard.",
+        });
+      }
     },
   });
 
@@ -112,9 +132,27 @@ export default function HomePage() {
                   <div key={entry.id} className="border rounded-lg p-6 space-y-4">
                     <div className="flex justify-between items-start">
                       <p className="text-lg font-medium">{entry.question}</p>
-                      <span className="text-sm text-muted-foreground">
-                        {new Date(entry.date).toLocaleDateString()}
-                      </span>
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm text-muted-foreground">
+                          {new Date(entry.date).toLocaleDateString()}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() =>
+                            shareEntryMutation.mutate({
+                              id: entry.id,
+                              isPublic: !entry.isPublic,
+                            })
+                          }
+                        >
+                          <Share2
+                            className={`h-4 w-4 ${
+                              entry.isPublic ? "text-primary" : ""
+                            }`}
+                          />
+                        </Button>
+                      </div>
                     </div>
                     <div className="prose prose-sm max-w-none">
                       {entry.answer}

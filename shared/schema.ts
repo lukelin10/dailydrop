@@ -15,6 +15,8 @@ export const entries = pgTable("entries", {
   answer: text("answer").notNull(),
   date: date("date").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  isPublic: boolean("is_public").notNull().default(false),
+  shareId: text("share_id").unique(),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -31,6 +33,10 @@ export const insertEntrySchema = createInsertSchema(entries)
   .extend({
     date: z.coerce.date(),
   });
+
+export const updateEntrySchema = z.object({
+  isPublic: z.boolean(),
+});
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertEntry = z.infer<typeof insertEntrySchema>;

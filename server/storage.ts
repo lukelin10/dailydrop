@@ -27,6 +27,8 @@ export interface IStorage {
   createEntry(userId: number, entry: InsertEntry): Promise<Entry>;
   getEntries(userId: number): Promise<Entry[]>;
   getEntry(userId: number, id: number): Promise<Entry | undefined>;
+  updateEntry(userId: number, id: number, updates: Partial<Entry>): Promise<Entry>;
+  getEntryByShareId(shareId: string): Promise<Entry | undefined>;
   sessionStore: session.Store;
   getDailyQuestion(date: Date): string;
 }
@@ -60,6 +62,8 @@ export class DatabaseStorage implements IStorage {
     const entry = {
       userId,
       ...insertEntry,
+      isPublic: false,
+      shareId: null,
       createdAt: new Date(),
     };
     const [created] = await db.insert(entries).values(entry).returning();
@@ -75,6 +79,23 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(entries)
       .where(and(eq(entries.id, id), eq(entries.userId, userId)));
+    return entry;
+  }
+
+  async updateEntry(userId: number, id: number, updates: Partial<Entry>): Promise<Entry> {
+    const [updated] = await db
+      .update(entries)
+      .set(updates)
+      .where(and(eq(entries.id, id), eq(entries.userId, userId)))
+      .returning();
+    return updated;
+  }
+
+  async getEntryByShareId(shareId: string): Promise<Entry | undefined> {
+    const [entry] = await db
+      .select()
+      .from(entries)
+      .where(eq(entries.shareId, shareId));
     return entry;
   }
 
