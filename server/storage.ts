@@ -1,18 +1,11 @@
-import { User, InsertUser, Entry, InsertEntry } from "@shared/schema";
+import { User, InsertUser, Entry, InsertEntry, users, entries } from "@shared/schema";
+import { db } from "./db";
+import { eq, and } from "drizzle-orm";
 import session from "express-session";
-import createMemoryStore from "memorystore";
+import connectPg from "connect-pg-simple";
+import { pool } from "./db";
 
-const MemoryStore = createMemoryStore(session);
-
-export interface IStorage {
-  getUser(id: number): Promise<User | undefined>;
-  getUserByUsername(username: string): Promise<User | undefined>;
-  createUser(user: InsertUser): Promise<User>;
-  createEntry(userId: number, entry: InsertEntry): Promise<Entry>;
-  getEntries(userId: number): Promise<Entry[]>;
-  getEntry(userId: number, id: number): Promise<Entry | undefined>;
-  sessionStore: session.Store;
-}
+const PostgresSessionStore = connectPg(session);
 
 const QUESTIONS = [
   "What made you smile today?",
@@ -27,61 +20,61 @@ const QUESTIONS = [
   "What's something you'd like to improve?"
 ];
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  private entries: Map<number, Entry>;
-  private currentUserId: number;
-  private currentEntryId: number;
+export interface IStorage {
+  getUser(id: number): Promise<User | undefined>;
+  getUserByUsername(username: string): Promise<User | undefined>;
+  createUser(user: InsertUser): Promise<User>;
+  createEntry(userId: number, entry: InsertEntry): Promise<Entry>;
+  getEntries(userId: number): Promise<Entry[]>;
+  getEntry(userId: number, id: number): Promise<Entry | undefined>;
+  sessionStore: session.Store;
+  getDailyQuestion(date: Date): string;
+}
+
+export class DatabaseStorage implements IStorage {
   sessionStore: session.Store;
 
   constructor() {
-    this.users = new Map();
-    this.entries = new Map();
-    this.currentUserId = 1;
-    this.currentEntryId = 1;
-    this.sessionStore = new MemoryStore({
-      checkPeriod: 86400000,
+    this.sessionStore = new PostgresSessionStore({
+      pool,
+      createTableIfMissing: true,
     });
   }
 
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.currentUserId++;
-    const user = { id, ...insertUser };
-    this.users.set(id, user);
+    const [user] = await db.insert(users).values(insertUser).returning();
     return user;
   }
 
   async createEntry(userId: number, insertEntry: InsertEntry): Promise<Entry> {
-    const id = this.currentEntryId++;
     const entry = {
-      id,
       userId,
       ...insertEntry,
       createdAt: new Date(),
     };
-    this.entries.set(id, entry);
-    return entry;
+    const [created] = await db.insert(entries).values(entry).returning();
+    return created;
   }
 
   async getEntries(userId: number): Promise<Entry[]> {
-    return Array.from(this.entries.values()).filter(
-      (entry) => entry.userId === userId,
-    );
+    return await db.select().from(entries).where(eq(entries.userId, userId));
   }
 
   async getEntry(userId: number, id: number): Promise<Entry | undefined> {
-    const entry = this.entries.get(id);
-    if (entry?.userId !== userId) return undefined;
+    const [entry] = await db
+      .select()
+      .from(entries)
+      .where(and(eq(entries.id, id), eq(entries.userId, userId)));
     return entry;
   }
 
@@ -91,4 +84,4 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+export const storage = new DatabaseStorage();

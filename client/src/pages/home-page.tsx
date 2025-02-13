@@ -6,6 +6,7 @@ import Editor from "@/components/editor";
 import CalendarView from "@/components/calendar-view";
 import { Loader2, LogOut } from "lucide-react";
 import { useState } from "react";
+import { apiRequest, queryClient } from "@/lib/queryClient";
 
 export default function HomePage() {
   const { user, logoutMutation } = useAuth();
