@@ -15,8 +15,8 @@ export function registerRoutes(app: Express): Server {
   setupAuth(app);
 
   // Configure express to handle larger payloads for audio files
-  app.use(express.json({ limit: '50mb' }));
-  app.use(express.urlencoded({ limit: '50mb', extended: true }));
+  app.use(express.json({ limit: '100mb' }));
+  app.use(express.urlencoded({ limit: '100mb', extended: true }));
 
   app.get("/api/entries", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
@@ -166,6 +166,8 @@ export function registerRoutes(app: Express): Server {
       const transcription = await openai.audio.transcriptions.create({
         file: await import('fs').then(fs => fs.createReadStream(tempFilePath)),
         model: "whisper-1",
+        response_format: "json",
+        temperature: 0.2,
       });
 
       // Clean up temp file

@@ -16,7 +16,14 @@ export function VoiceInput({ onTranscription, disabled }: VoiceInputProps) {
   const { status, startRecording, stopRecording, mediaBlobUrl } = useReactMediaRecorder({
     audio: true,
     onStop: async (blobUrl, blob) => {
-      if (!blob) return;
+      if (!blob) {
+        toast({
+          title: "Recording failed",
+          description: "No audio was captured. Please try again.",
+          variant: "destructive",
+        });
+        return;
+      }
 
       // Check file size (10MB limit)
       if (blob.size > 10 * 1024 * 1024) {
@@ -35,7 +42,9 @@ export function VoiceInput({ onTranscription, disabled }: VoiceInputProps) {
         reader.readAsDataURL(blob);
         reader.onloadend = async () => {
           const base64Audio = reader.result?.toString().split(',')[1];
-          if (!base64Audio) throw new Error('Failed to convert audio');
+          if (!base64Audio) {
+            throw new Error('Failed to convert audio');
+          }
 
           // Send to backend for transcription
           const response = await fetch('/api/transcribe', {
@@ -47,7 +56,8 @@ export function VoiceInput({ onTranscription, disabled }: VoiceInputProps) {
           });
 
           if (!response.ok) {
-            throw new Error('Transcription failed');
+            const errorData = await response.json();
+            throw new Error(errorData.error || 'Transcription failed');
           }
 
           const { text } = await response.json();
@@ -57,13 +67,15 @@ export function VoiceInput({ onTranscription, disabled }: VoiceInputProps) {
               title: "Voice transcribed",
               description: "Your message has been transcribed successfully",
             });
+          } else {
+            throw new Error('No transcription text received');
           }
         };
       } catch (error) {
         console.error('Transcription error:', error);
         toast({
           title: "Transcription failed",
-          description: "Please try again or type your message instead",
+          description: error.message || "Please try again or type your message instead",
           variant: "destructive",
         });
       } finally {
