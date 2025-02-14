@@ -145,8 +145,8 @@ export default function HomePage() {
           <div className="max-w-2xl mx-auto space-y-6">
             <ChatInterface
               entryId={currentEntryId}
-              question={todayEntry?.question || dailyQuestion?.question || ""}
-              answer={todayEntry?.answer || ""}
+              question={entries.find(e => e.id === currentEntryId)?.question || ""}
+              answer={entries.find(e => e.id === currentEntryId)?.answer || ""}
               onEndChat={handleEndChat}
             />
           </div>
@@ -157,7 +157,15 @@ export default function HomePage() {
               {uniqueEntries
                 .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
                 .map((entry) => (
-                  <div key={entry.id} className="border rounded-lg p-6 space-y-4">
+                  <div 
+                    key={entry.id} 
+                    className="border rounded-lg p-6 space-y-4 hover:bg-accent/50 cursor-pointer transition-colors"
+                    onClick={() => {
+                      setCurrentEntryId(entry.id);
+                      setShowChat(true);
+                      setShowFeed(false);
+                    }}
+                  >
                     <div className="flex justify-between items-start">
                       <p className="text-lg font-medium">{entry.question}</p>
                       <div className="flex items-center gap-2">
@@ -167,12 +175,13 @@ export default function HomePage() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() =>
+                          onClick={(e) => {
+                            e.stopPropagation(); 
                             shareEntryMutation.mutate({
                               id: entry.id,
                               isPublic: !entry.isPublic,
-                            })
-                          }
+                            });
+                          }}
                         >
                           <Share2
                             className={`h-4 w-4 ${
