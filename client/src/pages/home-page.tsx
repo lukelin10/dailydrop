@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Entry } from "@shared/schema";
 import Editor from "@/components/editor";
+import ChatInterface from "@/components/chat-interface";
 import { Loader2, LogOut, Share2 } from "lucide-react";
 import { useState } from "react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -12,6 +13,8 @@ export default function HomePage() {
   const { user, logoutMutation } = useAuth();
   const { toast } = useToast();
   const [showFeed, setShowFeed] = useState(false);
+  const [showChat, setShowChat] = useState(false);
+  const [currentEntryId, setCurrentEntryId] = useState<number | null>(null);
 
   const { data: entries = [], isLoading: entriesLoading } = useQuery<Entry[]>({
     queryKey: ["/api/entries"],
@@ -30,11 +33,14 @@ export default function HomePage() {
         answer,
         date: new Date(),
       };
-      await apiRequest("POST", "/api/entries", data);
+      const response = await apiRequest("POST", "/api/entries", data);
+      const entry = await response.json();
+      return entry;
     },
-    onSuccess: () => {
+    onSuccess: (entry) => {
       queryClient.invalidateQueries({ queryKey: ["/api/entries"] });
-      setShowFeed(true);
+      setCurrentEntryId(entry.id);
+      setShowChat(true);
     },
   });
 
@@ -101,7 +107,7 @@ export default function HomePage() {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        {!showFeed ? (
+        {!showFeed && !showChat ? (
           <div className="max-w-2xl mx-auto space-y-6">
             <h2 className="text-xl font-semibold">Today's Question</h2>
             {!todayEntry ? (
@@ -118,9 +124,23 @@ export default function HomePage() {
                 <div className="prose prose-sm max-w-none">
                   {todayEntry.answer}
                 </div>
-                <Button onClick={() => setShowFeed(true)}>View Past Entries</Button>
+                {!showChat && (
+                  <Button onClick={() => {
+                    setCurrentEntryId(todayEntry.id);
+                    setShowChat(true);
+                  }}>
+                    Chat with DropBot
+                  </Button>
+                )}
               </div>
             )}
+          </div>
+        ) : showChat && currentEntryId ? (
+          <div className="max-w-2xl mx-auto space-y-6">
+            <ChatInterface
+              entryId={currentEntryId}
+              onEndChat={() => setShowFeed(true)}
+            />
           </div>
         ) : (
           <div className="max-w-2xl mx-auto space-y-6">

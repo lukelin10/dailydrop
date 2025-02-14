@@ -1,4 +1,4 @@
-import { User, InsertUser, Entry, InsertEntry, users, entries } from "@shared/schema";
+import { User, InsertUser, Entry, InsertEntry, InsertChatMessage, ChatMessage, users, entries, chatMessages } from "@shared/schema";
 import { db } from "./db";
 import { eq, and } from "drizzle-orm";
 import session from "express-session";
@@ -31,6 +31,8 @@ export interface IStorage {
   getEntryByShareId(shareId: string): Promise<Entry | undefined>;
   sessionStore: session.Store;
   getDailyQuestion(date: Date): string;
+  createChatMessage(message: InsertChatMessage & { userId: number }): Promise<ChatMessage>;
+  getChatMessages(entryId: number): Promise<ChatMessage[]>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -64,7 +66,6 @@ export class DatabaseStorage implements IStorage {
       ...insertEntry,
       isPublic: false,
       shareId: null,
-      createdAt: new Date(),
     };
     const [created] = await db.insert(entries).values(entry).returning();
     return created;
@@ -102,6 +103,19 @@ export class DatabaseStorage implements IStorage {
   getDailyQuestion(date: Date): string {
     const dayOfYear = Math.floor(date.getTime() / (1000 * 60 * 60 * 24));
     return QUESTIONS[dayOfYear % QUESTIONS.length];
+  }
+
+  async createChatMessage(message: InsertChatMessage & { userId: number }): Promise<ChatMessage> {
+    const [created] = await db.insert(chatMessages).values(message).returning();
+    return created;
+  }
+
+  async getChatMessages(entryId: number): Promise<ChatMessage[]> {
+    return await db
+      .select()
+      .from(chatMessages)
+      .where(eq(chatMessages.entryId, entryId))
+      .orderBy(chatMessages.createdAt);
   }
 }
 

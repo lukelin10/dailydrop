@@ -2,8 +2,9 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth } from "./auth";
 import { storage } from "./storage";
-import { insertEntrySchema, updateEntrySchema } from "@shared/schema";
+import { insertEntrySchema, updateEntrySchema, insertChatMessageSchema } from "@shared/schema";
 import { nanoid } from "nanoid";
+import { generateChatResponse } from "./openai";
 
 export function registerRoutes(app: Express): Server {
   setupAuth(app);
@@ -32,7 +33,6 @@ export function registerRoutes(app: Express): Server {
     res.json({ question });
   });
 
-  // New endpoint to update entry sharing status
   app.patch("/api/entries/:id/share", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
 
@@ -55,13 +55,82 @@ export function registerRoutes(app: Express): Server {
     res.json(updated);
   });
 
-  // New endpoint to get a shared entry
   app.get("/api/shared/:shareId", async (req, res) => {
     const entry = await storage.getEntryByShareId(req.params.shareId);
     if (!entry || !entry.isPublic) {
       return res.status(404).json({ message: "Entry not found" });
     }
     res.json(entry);
+  });
+
+  // Chat endpoints
+  app.get("/api/entries/:id/chat", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+
+    const entryId = parseInt(req.params.id);
+    const entry = await storage.getEntry(req.user.id, entryId);
+    if (!entry) {
+      return res.status(404).json({ message: "Entry not found" });
+    }
+
+    const messages = await storage.getChatMessages(entryId);
+    res.json(messages);
+  });
+
+  app.post("/api/entries/:id/chat", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+
+    const entryId = parseInt(req.params.id);
+    const entry = await storage.getEntry(req.user.id, entryId);
+    if (!entry) {
+      return res.status(404).json({ message: "Entry not found" });
+    }
+
+    const parsed = insertChatMessageSchema.safeParse({
+      ...req.body,
+      entryId,
+    });
+    if (!parsed.success) {
+      return res.status(400).json(parsed.error);
+    }
+
+    // Create user message
+    const userMessage = await storage.createChatMessage({
+      ...parsed.data,
+      userId: req.user.id,
+    });
+
+    // Get conversation history
+    const messages = await storage.getChatMessages(entryId);
+    const conversationHistory = messages.map((msg): { role: "user" | "assistant"; content: string } => ({
+      role: msg.isBot ? "assistant" : "user",
+      content: msg.content
+    }));
+
+    try {
+      // Generate AI response
+      const botResponse = await generateChatResponse(
+        parsed.data.content,
+        conversationHistory
+      );
+
+      if (botResponse) {
+        // Create bot message
+        const botMessage = await storage.createChatMessage({
+          content: botResponse,
+          entryId,
+          isBot: true,
+          userId: req.user.id,
+        });
+
+        res.json([userMessage, botMessage]);
+      } else {
+        res.json([userMessage]);
+      }
+    } catch (error) {
+      console.error("Error generating chat response:", error);
+      res.json([userMessage]);
+    }
   });
 
   const httpServer = createServer(app);

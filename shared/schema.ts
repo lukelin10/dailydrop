@@ -16,7 +16,7 @@ export const entries = pgTable("entries", {
   date: date("date").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   isPublic: boolean("is_public").notNull().default(false),
-  shareId: text("share_id").unique(),
+  shareId: text("share_id"), // This makes it nullable by default
 });
 
 export const chatMessages = pgTable("chat_messages", {
