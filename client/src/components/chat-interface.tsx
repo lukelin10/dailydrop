@@ -45,7 +45,7 @@ export default function ChatInterface({ entryId, question, answer, onEndChat }: 
       sendMessageMutation.mutate(answer);
       setIsInitializing(false);
     }
-  }, [isInitializing, messagesLoading, messages.length, answer]);
+  }, [isInitializing, messagesLoading, messages.length, answer, sendMessageMutation]);
 
   const handleEndChat = () => {
     setIsChatEnded(true);
