@@ -19,6 +19,15 @@ export const entries = pgTable("entries", {
   shareId: text("share_id").unique(),
 });
 
+export const chatMessages = pgTable("chat_messages", {
+  id: serial("id").primaryKey(),
+  entryId: integer("entry_id").notNull(),
+  userId: integer("user_id").notNull(),
+  content: text("content").notNull(),
+  isBot: boolean("is_bot").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   password: true,
@@ -38,7 +47,18 @@ export const updateEntrySchema = z.object({
   isPublic: z.boolean(),
 });
 
+export const insertChatMessageSchema = createInsertSchema(chatMessages)
+  .pick({
+    content: true,
+    isBot: true,
+  })
+  .extend({
+    entryId: z.number(),
+  });
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertEntry = z.infer<typeof insertEntrySchema>;
+export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type User = typeof users.$inferSelect;
 export type Entry = typeof entries.$inferSelect;
+export type ChatMessage = typeof chatMessages.$inferSelect;
