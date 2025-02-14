@@ -6,11 +6,17 @@ import { insertEntrySchema, updateEntrySchema, insertChatMessageSchema } from "@
 import { nanoid } from "nanoid";
 import { generateChatResponse } from "./openai";
 import OpenAI from "openai";
+import { writeFile, unlink } from "fs/promises";
+import express from "express";
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export function registerRoutes(app: Express): Server {
   setupAuth(app);
+
+  // Configure express to handle larger payloads for audio files
+  app.use(express.json({ limit: '50mb' }));
+  app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
   app.get("/api/entries", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
@@ -139,25 +145,32 @@ export function registerRoutes(app: Express): Server {
   app.post("/api/transcribe", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
 
+    const tempFilePath = `/tmp/audio-${Date.now()}.webm`;
+
     try {
       // Convert base64 to buffer
       const buffer = Buffer.from(req.body.audio, 'base64');
 
-      // Create a temporary file path
-      const tempFilePath = `/tmp/audio-${Date.now()}.webm`;
-      require('fs').writeFileSync(tempFilePath, buffer);
+      // Write to temp file
+      await writeFile(tempFilePath, buffer);
 
       const transcription = await openai.audio.transcriptions.create({
-        file: require('fs').createReadStream(tempFilePath),
+        file: await import('fs').then(fs => fs.createReadStream(tempFilePath)),
         model: "whisper-1",
       });
 
       // Clean up temp file
-      require('fs').unlinkSync(tempFilePath);
+      await unlink(tempFilePath);
 
       res.json({ text: transcription.text });
     } catch (error) {
       console.error('Transcription error:', error);
+      // Attempt to clean up the temp file even if there was an error
+      try {
+        await unlink(tempFilePath);
+      } catch (cleanupError) {
+        // Ignore cleanup errors
+      }
       res.status(500).json({ error: 'Failed to transcribe audio' });
     }
   });
