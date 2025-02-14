@@ -5,18 +5,9 @@ import { storage } from "./storage";
 import { insertEntrySchema, updateEntrySchema, insertChatMessageSchema } from "@shared/schema";
 import { nanoid } from "nanoid";
 import { generateChatResponse } from "./openai";
-import OpenAI from "openai";
-import { writeFile, unlink } from "fs/promises";
-import express from "express";
-
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export function registerRoutes(app: Express): Server {
   setupAuth(app);
-
-  // Configure express to handle larger payloads for audio files
-  app.use(express.json({ limit: '100mb' }));
-  app.use(express.urlencoded({ limit: '100mb', extended: true }));
 
   app.get("/api/entries", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
@@ -139,50 +130,6 @@ export function registerRoutes(app: Express): Server {
     } catch (error) {
       console.error("Error generating chat response:", error);
       res.json([userMessage]);
-    }
-  });
-
-  app.post("/api/transcribe", async (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
-
-    const tempFilePath = `/tmp/audio-${Date.now()}.webm`;
-
-    try {
-      if (!req.body.audio) {
-        throw new Error('No audio data provided');
-      }
-
-      // Convert base64 to buffer
-      const buffer = Buffer.from(req.body.audio, 'base64');
-
-      // Check file size (10MB limit)
-      if (buffer.length > 10 * 1024 * 1024) {
-        return res.status(413).json({ error: 'Audio file too large. Please keep recordings under 1 minute.' });
-      }
-
-      // Write to temp file
-      await writeFile(tempFilePath, buffer);
-
-      const transcription = await openai.audio.transcriptions.create({
-        file: await import('fs').then(fs => fs.createReadStream(tempFilePath)),
-        model: "whisper-1",
-        response_format: "json",
-        temperature: 0.2,
-      });
-
-      // Clean up temp file
-      await unlink(tempFilePath);
-
-      res.json({ text: transcription.text });
-    } catch (error) {
-      console.error('Transcription error:', error);
-      // Attempt to clean up the temp file even if there was an error
-      try {
-        await unlink(tempFilePath);
-      } catch (cleanupError) {
-        // Ignore cleanup errors
-      }
-      res.status(500).json({ error: 'Failed to transcribe audio' });
     }
   });
 

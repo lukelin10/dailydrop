@@ -7,7 +7,6 @@ import { ChatMessage } from "@shared/schema";
 import { useForm } from "react-hook-form";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { VoiceInput } from "./voice-input";
 
 interface ChatInterfaceProps {
   entryId: number;
@@ -41,6 +40,7 @@ export default function ChatInterface({ entryId, question, answer, onEndChat }: 
   });
 
   useEffect(() => {
+    // Send the initial message (user's answer) when the chat first loads
     if (isInitializing && !messagesLoading && messages.length === 0) {
       sendMessageMutation.mutate(answer);
       setIsInitializing(false);
@@ -57,12 +57,6 @@ export default function ChatInterface({ entryId, question, answer, onEndChat }: 
       sendMessageMutation.mutate(message);
     }
   });
-
-  const handleVoiceTranscription = (text: string) => {
-    if (text.trim() && !isChatEnded) {
-      form.setValue("message", text);
-    }
-  };
 
   return (
     <div className="flex flex-col h-[600px] border rounded-lg">
@@ -130,10 +124,6 @@ export default function ChatInterface({ entryId, question, answer, onEndChat }: 
                 <Send className="h-4 w-4" />
               )}
             </Button>
-            <VoiceInput
-              onTranscription={handleVoiceTranscription}
-              disabled={isChatEnded}
-            />
             <Button
               type="button"
               variant="outline"
