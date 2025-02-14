@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2, Mic, MicOff } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
 
 interface EditorProps {
@@ -16,9 +16,7 @@ export default function Editor({ onSave, loading }: EditorProps) {
     listening,
     resetTranscript,
     browserSupportsSpeechRecognition
-  } = useSpeechRecognition({
-    clearTranscriptOnListen: false,
-  });
+  } = useSpeechRecognition();
 
   // Update content when transcript changes
   useEffect(() => {
@@ -27,18 +25,6 @@ export default function Editor({ onSave, loading }: EditorProps) {
       resetTranscript();
     }
   }, [transcript]);
-
-  const handleVoiceInput = () => {
-    if (listening) {
-      SpeechRecognition.startListening({ 
-        continuous: true,
-        interimResults: true,
-        language: 'en-US'
-      });
-    } else {
-      SpeechRecognition.stopListening();
-    }
-  };
 
   if (!browserSupportsSpeechRecognition) {
     return (
@@ -65,27 +51,50 @@ export default function Editor({ onSave, loading }: EditorProps) {
 
   return (
     <div className="space-y-4">
-      <div className="relative">
-        <Textarea
-          placeholder="Write your thoughts..."
-          className="min-h-[200px] pr-12"
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-        />
+      <div className="flex gap-2 mb-2">
         <Button
-          type="button"
-          size="icon"
-          variant="ghost"
-          className={`absolute right-2 top-2 ${listening ? 'bg-red-100 hover:bg-red-200' : ''}`}
-          onClick={handleVoiceInput}
+          variant="outline"
+          onClick={() => {
+            SpeechRecognition.startListening({ 
+              continuous: true,
+              language: 'en-US'
+            });
+          }}
+          disabled={listening}
         >
-          {listening ? (
-            <MicOff className="h-4 w-4 text-destructive" />
-          ) : (
-            <Mic className="h-4 w-4" />
-          )}
+          Start Recording
+        </Button>
+        <Button
+          variant="outline"
+          onClick={SpeechRecognition.stopListening}
+          disabled={!listening}
+        >
+          Stop Recording
+        </Button>
+        <Button
+          variant="ghost"
+          onClick={() => {
+            resetTranscript();
+            setContent("");
+          }}
+        >
+          Clear
         </Button>
       </div>
+
+      {listening && (
+        <div className="text-sm text-muted-foreground animate-pulse">
+          Listening...
+        </div>
+      )}
+
+      <Textarea
+        placeholder="Write your thoughts..."
+        className="min-h-[200px]"
+        value={content}
+        onChange={(e) => setContent(e.target.value)}
+      />
+
       <Button
         className="w-full"
         onClick={() => onSave(content)}
