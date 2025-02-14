@@ -27,10 +27,15 @@ export function registerRoutes(app: Express): Server {
     res.status(201).json(entry);
   });
 
-  app.get("/api/question", (req, res) => {
+  app.get("/api/question", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
-    const question = storage.getDailyQuestion(new Date());
-    res.json({ question });
+    try {
+      const question = await storage.getDailyQuestion(new Date());
+      res.json({ question });
+    } catch (error) {
+      console.error("Error fetching daily question:", error);
+      res.status(500).json({ message: "Failed to fetch daily question" });
+    }
   });
 
   app.patch("/api/entries/:id/share", async (req, res) => {

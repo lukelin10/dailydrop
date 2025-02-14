@@ -4,21 +4,9 @@ import { eq, and } from "drizzle-orm";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db";
+import { getNextQuestion } from './sheets';
 
 const PostgresSessionStore = connectPg(session);
-
-const QUESTIONS = [
-  "What made you smile today?",
-  "What's one thing you learned recently?",
-  "What are you grateful for today?",
-  "What's challenging you right now?",
-  "What's something you're looking forward to?",
-  "What's a small win you had today?",
-  "What's something that inspired you recently?",
-  "What's a goal you're working towards?",
-  "What made today unique?",
-  "What's something you'd like to improve?"
-];
 
 export interface IStorage {
   getUser(id: number): Promise<User | undefined>;
@@ -30,7 +18,7 @@ export interface IStorage {
   updateEntry(userId: number, id: number, updates: Partial<Entry>): Promise<Entry>;
   getEntryByShareId(shareId: string): Promise<Entry | undefined>;
   sessionStore: session.Store;
-  getDailyQuestion(date: Date): string;
+  getDailyQuestion(date: Date): Promise<string>;
   createChatMessage(message: InsertChatMessage & { userId: number }): Promise<ChatMessage>;
   getChatMessages(entryId: number): Promise<ChatMessage[]>;
 }
@@ -100,9 +88,27 @@ export class DatabaseStorage implements IStorage {
     return entry;
   }
 
-  getDailyQuestion(date: Date): string {
-    const dayOfYear = Math.floor(date.getTime() / (1000 * 60 * 60 * 24));
-    return QUESTIONS[dayOfYear % QUESTIONS.length];
+  async getDailyQuestion(date: Date): Promise<string> {
+    try {
+      return await getNextQuestion();
+    } catch (error) {
+      const FALLBACK_QUESTIONS = [
+        "What small moment from today made you smile?",
+        "What's something you feel is seeking you?",
+        "What's a little detail in your daily routine that you really enjoy?",
+        "What's one thing you learned recently?",
+        "What are you grateful for today?",
+        "What's challenging you right now?",
+        "What's something you're looking forward to?",
+        "What's a small win you had today?",
+        "What's something that inspired you recently?",
+        "What's a goal you're working towards?",
+        "What made today unique?",
+        "What's something you'd like to improve?"
+      ];
+      const dayOfYear = Math.floor(date.getTime() / (1000 * 60 * 60 * 24));
+      return FALLBACK_QUESTIONS[dayOfYear % FALLBACK_QUESTIONS.length];
+    }
   }
 
   async createChatMessage(message: InsertChatMessage & { userId: number }): Promise<ChatMessage> {
