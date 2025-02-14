@@ -148,8 +148,17 @@ export function registerRoutes(app: Express): Server {
     const tempFilePath = `/tmp/audio-${Date.now()}.webm`;
 
     try {
+      if (!req.body.audio) {
+        throw new Error('No audio data provided');
+      }
+
       // Convert base64 to buffer
       const buffer = Buffer.from(req.body.audio, 'base64');
+
+      // Check file size (10MB limit)
+      if (buffer.length > 10 * 1024 * 1024) {
+        return res.status(413).json({ error: 'Audio file too large. Please keep recordings under 1 minute.' });
+      }
 
       // Write to temp file
       await writeFile(tempFilePath, buffer);
