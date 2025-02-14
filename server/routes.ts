@@ -5,6 +5,9 @@ import { storage } from "./storage";
 import { insertEntrySchema, updateEntrySchema, insertChatMessageSchema } from "@shared/schema";
 import { nanoid } from "nanoid";
 import { generateChatResponse } from "./openai";
+import OpenAI from "openai";
+
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export function registerRoutes(app: Express): Server {
   setupAuth(app);
@@ -130,6 +133,32 @@ export function registerRoutes(app: Express): Server {
     } catch (error) {
       console.error("Error generating chat response:", error);
       res.json([userMessage]);
+    }
+  });
+
+  app.post("/api/transcribe", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+
+    try {
+      // Convert base64 to buffer
+      const buffer = Buffer.from(req.body.audio, 'base64');
+
+      // Create a temporary file path
+      const tempFilePath = `/tmp/audio-${Date.now()}.webm`;
+      require('fs').writeFileSync(tempFilePath, buffer);
+
+      const transcription = await openai.audio.transcriptions.create({
+        file: require('fs').createReadStream(tempFilePath),
+        model: "whisper-1",
+      });
+
+      // Clean up temp file
+      require('fs').unlinkSync(tempFilePath);
+
+      res.json({ text: transcription.text });
+    } catch (error) {
+      console.error('Transcription error:', error);
+      res.status(500).json({ error: 'Failed to transcribe audio' });
     }
   });
 
