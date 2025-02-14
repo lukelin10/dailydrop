@@ -30,13 +30,13 @@ export default function Editor({ onSave, loading }: EditorProps) {
 
   const handleVoiceInput = () => {
     if (listening) {
-      SpeechRecognition.stopListening();
-    } else {
       SpeechRecognition.startListening({ 
         continuous: true,
         interimResults: true,
         language: 'en-US'
       });
+    } else {
+      SpeechRecognition.stopListening();
     }
   };
 
