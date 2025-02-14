@@ -84,6 +84,12 @@ export default function HomePage() {
     );
   }
 
+  const handleEndChat = () => {
+    setShowChat(false);
+    setShowFeed(true);
+    setCurrentEntryId(null);
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b">
@@ -141,7 +147,7 @@ export default function HomePage() {
               entryId={currentEntryId}
               question={todayEntry?.question || dailyQuestion?.question || ""}
               answer={todayEntry?.answer || ""}
-              onEndChat={() => setShowFeed(true)}
+              onEndChat={handleEndChat}
             />
           </div>
         ) : (
