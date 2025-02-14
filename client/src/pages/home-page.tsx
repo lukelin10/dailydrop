@@ -139,6 +139,8 @@ export default function HomePage() {
           <div className="max-w-2xl mx-auto space-y-6">
             <ChatInterface
               entryId={currentEntryId}
+              question={todayEntry?.question || dailyQuestion?.question || ""}
+              answer={todayEntry?.answer || ""}
               onEndChat={() => setShowFeed(true)}
             />
           </div>

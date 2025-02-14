@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, Send } from "lucide-react";
@@ -10,11 +10,14 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 
 interface ChatInterfaceProps {
   entryId: number;
+  question: string;
+  answer: string;
   onEndChat: () => void;
 }
 
-export default function ChatInterface({ entryId, onEndChat }: ChatInterfaceProps) {
+export default function ChatInterface({ entryId, question, answer, onEndChat }: ChatInterfaceProps) {
   const [isChatEnded, setIsChatEnded] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
   const form = useForm<{ message: string }>();
 
   const { data: messages = [], isLoading: messagesLoading } = useQuery<ChatMessage[]>({
@@ -36,6 +39,14 @@ export default function ChatInterface({ entryId, onEndChat }: ChatInterfaceProps
     },
   });
 
+  useEffect(() => {
+    // Send the initial message (user's answer) when the chat first loads
+    if (isInitializing && !messagesLoading && messages.length === 0) {
+      sendMessageMutation.mutate(answer);
+      setIsInitializing(false);
+    }
+  }, [isInitializing, messagesLoading, messages.length, answer]);
+
   const handleEndChat = () => {
     setIsChatEnded(true);
     onEndChat();
@@ -54,6 +65,11 @@ export default function ChatInterface({ entryId, onEndChat }: ChatInterfaceProps
         <p className="text-sm text-muted-foreground">
           Let's reflect on your thoughts together
         </p>
+      </div>
+
+      <div className="p-4 border-b bg-muted/50 sticky top-0">
+        <p className="text-sm font-medium">Today's Question:</p>
+        <p className="text-sm text-muted-foreground">{question}</p>
       </div>
 
       <ScrollArea className="flex-1 p-4">
