@@ -16,7 +16,9 @@ export default function Editor({ onSave, loading }: EditorProps) {
     listening,
     resetTranscript,
     browserSupportsSpeechRecognition
-  } = useSpeechRecognition();
+  } = useSpeechRecognition({
+    clearTranscriptOnListen: false,
+  });
 
   // Update content when transcript changes
   useEffect(() => {
@@ -30,7 +32,11 @@ export default function Editor({ onSave, loading }: EditorProps) {
     if (listening) {
       SpeechRecognition.stopListening();
     } else {
-      SpeechRecognition.startListening({ continuous: true });
+      SpeechRecognition.startListening({ 
+        continuous: true,
+        interimResults: true,
+        language: 'en-US'
+      });
     }
   };
 
@@ -70,7 +76,7 @@ export default function Editor({ onSave, loading }: EditorProps) {
           type="button"
           size="icon"
           variant="ghost"
-          className="absolute right-2 top-2"
+          className={`absolute right-2 top-2 ${listening ? 'bg-red-100 hover:bg-red-200' : ''}`}
           onClick={handleVoiceInput}
         >
           {listening ? (
