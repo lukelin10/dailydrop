@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2, Send } from "lucide-react";
@@ -18,6 +18,7 @@ interface ChatInterfaceProps {
 export default function ChatInterface({ entryId, question, answer, onEndChat }: ChatInterfaceProps) {
   const [isChatEnded, setIsChatEnded] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
   const form = useForm<{ message: string }>();
 
   const { data: messages = [], isLoading: messagesLoading } = useQuery<ChatMessage[]>({
@@ -46,6 +47,17 @@ export default function ChatInterface({ entryId, question, answer, onEndChat }: 
       console.error('Chat message error:', error);
     }
   });
+
+  // Auto-scroll whenever messages change or after sending a message
+  useEffect(() => {
+    if (scrollAreaRef.current) {
+      const scrollContainer = scrollAreaRef.current;
+      scrollContainer.scrollTo({
+        top: scrollContainer.scrollHeight,
+        behavior: 'smooth'
+      });
+    }
+  }, [messages, sendMessageMutation.isSuccess]);
 
   useEffect(() => {
     // Send the initial message (user's answer) when the chat first loads
@@ -80,7 +92,10 @@ export default function ChatInterface({ entryId, question, answer, onEndChat }: 
         <p className="text-sm text-muted-foreground">{question}</p>
       </div>
 
-      <ScrollArea className="flex-1 p-4">
+      <ScrollArea 
+        className="flex-1 p-4"
+        ref={scrollAreaRef}
+      >
         <div className="space-y-4">
           {messagesLoading ? (
             <div className="flex justify-center">
