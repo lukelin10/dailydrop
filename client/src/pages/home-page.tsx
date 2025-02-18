@@ -99,7 +99,7 @@ export default function HomePage() {
           </h1>
           <div className="flex items-center gap-4">
             <span className="text-sm text-muted-foreground">
-              {user?.username}
+              User
             </span>
             <Button
               variant="ghost"
