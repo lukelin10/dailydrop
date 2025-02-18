@@ -128,36 +128,55 @@ export default function ChatInterface({ entryId, question, answer, onEndChat }: 
       </ScrollArea>
 
       <div className="p-4 border-t">
-        <form onSubmit={onSubmit} className="flex gap-2">
-          <Textarea
-            {...form.register("message")}
-            placeholder="Type your message..."
-            className="min-h-[80px]"
-            disabled={isChatEnded}
-          />
-          <div className="flex flex-col gap-2">
-            <Button
-              type="submit"
-              size="icon"
-              disabled={isChatEnded || sendMessageMutation.isPending || messages.length >= MESSAGE_LIMIT}
-            >
-              {sendMessageMutation.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Send className="h-4 w-4" />
-              )}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleEndChat}
+        {messages.length < MESSAGE_LIMIT ? (
+          <form onSubmit={onSubmit} className="flex gap-2">
+            <Textarea
+              {...form.register("message")}
+              placeholder="Type your message..."
+              className="min-h-[80px]"
               disabled={isChatEnded}
-            >
-              End Chat
-            </Button>
+            />
+            <div className="flex flex-col gap-2">
+              <Button
+                type="submit"
+                size="icon"
+                disabled={isChatEnded || sendMessageMutation.isPending}
+              >
+                {sendMessageMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
+              </Button>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleEndChat}
+                disabled={isChatEnded}
+              >
+                End Chat
+              </Button>
+            </div>
+          </form>
+        ) : (
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground text-center">
+              DropBot chats are limited to 7 messages
+            </p>
+            <div className="flex justify-center">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={handleEndChat}
+                disabled={isChatEnded}
+              >
+                End Chat
+              </Button>
+            </div>
           </div>
-        </form>
+        )}
       </div>
     </div>
   );
