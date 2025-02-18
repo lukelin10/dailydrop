@@ -31,12 +31,20 @@ export default function ChatInterface({ entryId, question, answer, onEndChat }: 
         isBot: false,
         entryId,
       };
-      await apiRequest("POST", `/api/entries/${entryId}/chat`, data);
+      const response = await apiRequest("POST", `/api/entries/${entryId}/chat`, data);
+      if (!response.ok) {
+        const error = await response.text();
+        throw new Error(`Failed to send message: ${error}`);
+      }
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/entries/${entryId}/chat`] });
       form.reset();
     },
+    onError: (error) => {
+      console.error('Chat message error:', error);
+    }
   });
 
   useEffect(() => {

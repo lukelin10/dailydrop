@@ -86,8 +86,11 @@ export function registerRoutes(app: Express): Server {
     if (!req.isAuthenticated()) return res.sendStatus(401);
 
     const entryId = parseInt(req.params.id);
+    console.log('[express] Chat message received:', { entryId, body: req.body });
+    
     const entry = await storage.getEntry(req.user.id, entryId);
     if (!entry) {
+      console.log('[express] Entry not found:', { entryId, userId: req.user.id });
       return res.status(404).json({ message: "Entry not found" });
     }
 
