@@ -18,7 +18,6 @@ interface ChatInterfaceProps {
 export default function ChatInterface({ entryId, question, answer, onEndChat }: ChatInterfaceProps) {
   const [isChatEnded, setIsChatEnded] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
-  const MESSAGE_LIMIT = 7;
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const form = useForm<{ message: string }>();
 
@@ -58,11 +57,7 @@ export default function ChatInterface({ entryId, question, answer, onEndChat }: 
   // Scroll to bottom when messages change or after sending a message
   useEffect(() => {
     scrollToBottom();
-    if (messages.length >= MESSAGE_LIMIT) {
-      setIsChatEnded(true);
-      onEndChat();
-    }
-  }, [messages, sendMessageMutation.isSuccess, onEndChat]);
+  }, [messages, sendMessageMutation.isSuccess]);
 
   useEffect(() => {
     // Send the initial message (user's answer) when the chat first loads
