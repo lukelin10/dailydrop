@@ -117,6 +117,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getChatMessages(entryId: number): Promise<ChatMessage[]> {
+
+  async clearAllData(): Promise<void> {
+    await db.delete(chatMessages);
+    await db.delete(entries);
+  }
+
     return await db
       .select()
       .from(chatMessages)
