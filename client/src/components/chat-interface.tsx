@@ -18,7 +18,7 @@ interface ChatInterfaceProps {
 export default function ChatInterface({ entryId, question, answer, onEndChat }: ChatInterfaceProps) {
   const [isChatEnded, setIsChatEnded] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
-  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const form = useForm<{ message: string }>();
 
   const { data: messages = [], isLoading: messagesLoading } = useQuery<ChatMessage[]>({
@@ -48,15 +48,15 @@ export default function ChatInterface({ entryId, question, answer, onEndChat }: 
     }
   });
 
-  // Auto-scroll whenever messages change or after sending a message
-  useEffect(() => {
-    if (scrollAreaRef.current) {
-      const scrollContainer = scrollAreaRef.current;
-      scrollContainer.scrollTo({
-        top: scrollContainer.scrollHeight,
-        behavior: 'smooth'
-      });
+  const scrollToBottom = () => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
+  };
+
+  // Scroll to bottom when messages change or after sending a message
+  useEffect(() => {
+    scrollToBottom();
   }, [messages, sendMessageMutation.isSuccess]);
 
   useEffect(() => {
@@ -92,10 +92,7 @@ export default function ChatInterface({ entryId, question, answer, onEndChat }: 
         <p className="text-sm text-muted-foreground">{question}</p>
       </div>
 
-      <ScrollArea 
-        className="flex-1 p-4"
-        ref={scrollAreaRef}
-      >
+      <ScrollArea className="flex-1 p-4">
         <div className="space-y-4">
           {messagesLoading ? (
             <div className="flex justify-center">
@@ -124,6 +121,7 @@ export default function ChatInterface({ entryId, question, answer, onEndChat }: 
               </div>
             ))
           )}
+          <div ref={messagesEndRef} /> {/* Anchor element for scrolling */}
         </div>
       </ScrollArea>
 
