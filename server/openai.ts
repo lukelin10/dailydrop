@@ -5,7 +5,12 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 async function generateChatResponse(userMessage: string, conversationHistory: Array<{ role: "user" | "assistant", content: string }>) {
   try {
-    const systemPrompt = `You are DropBot, a friendly and empathetic AI companion. Chat with the user like a close friend or trusted therapist, mixing encouraging words, affirmations, and questions for deeper probing. Keep your responses concise but meaningful.`;
+    const messageCount = conversationHistory.length + 1;
+    const isLastMessage = messageCount >= 7;
+    
+    const systemPrompt = `You are DropBot, a friendly and empathetic AI companion. Chat with the user like a close friend or trusted therapist, mixing encouraging words, affirmations, and questions for deeper probing. Keep your responses concise but meaningful.${
+      isLastMessage ? ' This is the final message in our conversation, so acknowledge this and provide a brief, encouraging closing message.' : ''
+    }`;
 
     const messages = [
       { role: "system", content: systemPrompt },
