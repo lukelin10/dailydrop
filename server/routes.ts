@@ -68,12 +68,6 @@ export function registerRoutes(app: Express): Server {
     res.json(entry);
   });
 
-  app.post("/api/clear-data", async (req, res) => {
-    if (!req.isAuthenticated()) return res.sendStatus(401);
-    await storage.clearAllData();
-    res.sendStatus(200);
-  });
-
   // Chat endpoints
   app.get("/api/entries/:id/chat", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
