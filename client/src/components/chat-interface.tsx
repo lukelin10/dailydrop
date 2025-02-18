@@ -15,6 +15,8 @@ interface ChatInterfaceProps {
   onEndChat: () => void;
 }
 
+const MESSAGE_LIMIT = 7;
+
 export default function ChatInterface({ entryId, question, answer, onEndChat }: ChatInterfaceProps) {
   const [isChatEnded, setIsChatEnded] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
@@ -137,7 +139,7 @@ export default function ChatInterface({ entryId, question, answer, onEndChat }: 
             <Button
               type="submit"
               size="icon"
-              disabled={isChatEnded || sendMessageMutation.isPending}
+              disabled={isChatEnded || sendMessageMutation.isPending || messages.length >= MESSAGE_LIMIT}
             >
               {sendMessageMutation.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
