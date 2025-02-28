@@ -7,7 +7,8 @@
     "dev": "tsx server/index.ts",
     "build": "tsc -b && vite build",
     "lint": "tsc -b --incremental false --noEmit",
-    "test": "vitest run"
+    "test": "vitest run",
+    "start": "node dist/server/index.js"
   },
   "dependencies": {
     "@firebase/auth": "^1.9.0",
