@@ -21,7 +21,7 @@ let schemaContent = fs.readFileSync(sourceSchemaPath, 'utf-8');
 // Convert TypeScript to JavaScript
 schemaContent = schemaContent
   .replace(/import {.*?} from "(.+?)";/g, 'import {$1} from "$2.js";')
-  .replace(/@shared\//g, '../shared/');
+  // .replace(/@shared\//g, '../shared/');
 
 // Make sure exports are compatible with ESM
 schemaContent = schemaContent.replace(/export type/g, 'export');
@@ -44,16 +44,10 @@ function updateImports(directory: string) {
     if (!file.endsWith('.js')) return;
 
     let content = fs.readFileSync(filePath, 'utf-8');
-    
-    // Fix @shared/ imports based on file location
-    const relativeToRoot = path.relative(path.dirname(filePath), path.join(__dirname, '../dist'));
-    const pathToShared = path.join(relativeToRoot, 'shared').replace(/\\/g, '/');
-    
     content = content.replace(
-      /from ['"]@shared\/(.*?)['"]/g, 
-      (match, p1) => `from "${pathToShared}/${p1}.js"`
+      /from ['"]@shared\/(.*?)['"]/g,
+      'from "../shared/$1.js"'
     );
-    
     fs.writeFileSync(filePath, content);
   });
 }
