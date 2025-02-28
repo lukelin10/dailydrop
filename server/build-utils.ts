@@ -21,7 +21,7 @@ let schemaContent = fs.readFileSync(sourceSchemaPath, 'utf-8');
 // Convert TypeScript to JavaScript
 schemaContent = schemaContent
   .replace(/import {.*?} from "(.+?)";/g, 'import {$1} from "$2.js";')
-  .replace(/@shared\//g, '../shared/');
+  // .replace(/@shared\//g, '../shared/');
 
 // Make sure exports are compatible with ESM
 schemaContent = schemaContent.replace(/export type/g, 'export');
