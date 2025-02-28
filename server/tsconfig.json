@@ -10,7 +10,8 @@
     "paths": {
       "@/*": ["../client/src/*"],
       "@shared/*": ["../shared/*"]
-    }
+    },
+    "rootDir": ".."
   },
   "include": ["**/*", "../shared/**/*"],
   "exclude": ["**/*.test.ts"]
