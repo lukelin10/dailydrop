@@ -32,7 +32,7 @@ export function registerRoutes(app: Express): Server {
   app.get("/api/question", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     try {
-      const question = await storage.getDailyQuestion(new Date());
+      const question = await storage.getDailyQuestion(new Date().toISOString());
       res.json({ question });
     } catch (error) {
       console.error("Error fetching daily question:", error);

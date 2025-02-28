@@ -88,7 +88,7 @@ export class DatabaseStorage implements IStorage {
     return entry;
   }
 
-  async getDailyQuestion(date: Date): Promise<string> {
+  async getDailyQuestion(date: string): Promise<string> {
     try {
       return await getNextQuestion();
     } catch (error) {
@@ -106,7 +106,8 @@ export class DatabaseStorage implements IStorage {
         "What made today unique?",
         "What's something you'd like to improve?"
       ];
-      const dayOfYear = Math.floor(date.getTime() / (1000 * 60 * 60 * 24));
+      const dateObj = new Date(date);
+      const dayOfYear = Math.floor(dateObj.getTime() / (1000 * 60 * 60 * 24));
       return FALLBACK_QUESTIONS[dayOfYear % FALLBACK_QUESTIONS.length];
     }
   }
