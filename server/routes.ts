@@ -1,6 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { setupAuth } from "./auth";
+import { setupAuth } from "./auth.js";
 import { storage } from "./storage";
 import { insertEntrySchema, updateEntrySchema, insertChatMessageSchema } from "@shared/schema";
 import { nanoid } from "nanoid";
