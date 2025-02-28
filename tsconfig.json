@@ -3,8 +3,8 @@
   "exclude": ["node_modules", "build", "dist", "server/**/*"],
   "compilerOptions": {
     "target": "ESNext",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
@@ -21,6 +21,6 @@
       "@/*": ["./client/src/*"],
       "@shared/*": ["./shared/*"]
     },
-    "types": ["node", "vite/client"]
+    "types": ["vite/client"]
   }
 }

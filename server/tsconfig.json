@@ -5,7 +5,12 @@
     "moduleResolution": "NodeNext",
     "outDir": "../dist/server",
     "noEmit": false,
-    "jsx": "react"
+    "jsx": "react",
+    "types": ["node"],
+    "paths": {
+      "@/*": ["../client/src/*"],
+      "@shared/*": ["../shared/*"]
+    }
   },
   "include": ["**/*", "../shared/**/*"],
   "exclude": ["**/*.test.ts"]
