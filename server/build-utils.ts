@@ -18,8 +18,13 @@ const destSchemaPath = path.join(distSharedDir, 'schema.js');
 // Read and transform the schema file
 let schemaContent = fs.readFileSync(sourceSchemaPath, 'utf-8');
 
-// Update imports to use relative paths
-schemaContent = schemaContent.replace(/@shared\//g, '../shared/');
+// Convert TypeScript to JavaScript
+schemaContent = schemaContent
+  .replace(/import {.*?} from "(.+?)";/g, 'import {$1} from "$2.js";')
+  .replace(/@shared\//g, '../shared/');
+
+// Make sure exports are compatible with ESM
+schemaContent = schemaContent.replace(/export type/g, 'export');
 
 // Write the transformed file
 fs.writeFileSync(destSchemaPath, schemaContent);
@@ -41,7 +46,7 @@ function updateImports(directory: string) {
     let content = fs.readFileSync(filePath, 'utf-8');
     content = content.replace(
       /from ['"]@shared\/(.*?)['"]/g,
-      'from "../shared/$1"'
+      'from "../shared/$1.js"'
     );
     fs.writeFileSync(filePath, content);
   });
