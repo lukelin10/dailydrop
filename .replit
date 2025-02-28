@@ -14,17 +14,27 @@ run = ["npm", "run", "start"]
 localPort = 5000
 externalPort = 80
 
+[[ports]]
+localPort = 24678
+externalPort = 3000
+
 [workflows]
-runButton = "Start application"
+runButton = "Project"
 
 [[workflows.workflow]]
 name = "Project"
 mode = "parallel"
 author = "agent"
 
+[workflows.workflow.metadata]
+agentRequireRestartOnSave = false
+
 [[workflows.workflow.tasks]]
-task = "workflow.run"
-args = "Start application"
+task = "packager.installForAll"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "npm test sheets.test.ts"
 
 [[workflows.workflow]]
 name = "Start application"
