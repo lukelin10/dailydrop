@@ -7,11 +7,12 @@
     "noEmit": false,
     "jsx": "react",
     "types": ["node"],
+    "rootDir": "..",
+    "baseUrl": "..",
     "paths": {
-      "@/*": ["../client/src/*"],
-      "@shared/*": ["../shared/*"]
-    },
-    "rootDir": ".."
+      "@/*": ["client/src/*"],
+      "@shared/*": ["shared/*"]
+    }
   },
   "include": ["**/*", "../shared/**/*"],
   "exclude": ["**/*.test.ts"]
