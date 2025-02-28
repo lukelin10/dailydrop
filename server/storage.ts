@@ -18,7 +18,7 @@ export interface IStorage {
   updateEntry(userId: number, id: number, updates: Partial<Entry>): Promise<Entry>;
   getEntryByShareId(shareId: string): Promise<Entry | undefined>;
   sessionStore: session.Store;
-  getDailyQuestion(date: string): Promise<string>;
+  getDailyQuestion(date: Date): Promise<string>;
   createChatMessage(message: InsertChatMessage & { userId: number }): Promise<ChatMessage>;
   getChatMessages(entryId: number): Promise<ChatMessage[]>;
 }
@@ -88,7 +88,7 @@ export class DatabaseStorage implements IStorage {
     return entry;
   }
 
-  async getDailyQuestion(date: string): Promise<string> {
+  async getDailyQuestion(date: Date): Promise<string> {
     try {
       return await getNextQuestion();
     } catch (error) {
@@ -106,8 +106,7 @@ export class DatabaseStorage implements IStorage {
         "What made today unique?",
         "What's something you'd like to improve?"
       ];
-      const dateObj = new Date(date);
-      const dayOfYear = Math.floor(dateObj.getTime() / (1000 * 60 * 60 * 24));
+      const dayOfYear = Math.floor(date.getTime() / (1000 * 60 * 60 * 24));
       return FALLBACK_QUESTIONS[dayOfYear % FALLBACK_QUESTIONS.length];
     }
   }
