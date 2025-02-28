@@ -18,7 +18,7 @@ export interface IStorage {
   updateEntry(userId: number, id: number, updates: Partial<Entry>): Promise<Entry>;
   getEntryByShareId(shareId: string): Promise<Entry | undefined>;
   sessionStore: session.Store;
-  getDailyQuestion(date: Date): Promise<string>;
+  getDailyQuestion(date: string): Promise<string>;
   createChatMessage(message: InsertChatMessage & { userId: number }): Promise<ChatMessage>;
   getChatMessages(entryId: number): Promise<ChatMessage[]>;
 }
