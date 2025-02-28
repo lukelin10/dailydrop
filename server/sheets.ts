@@ -1,11 +1,11 @@
 import { google } from 'googleapis';
 import { GoogleAuth } from 'google-auth-library';
 
-let currentQuestionIndex = 0;
+let currentQuestionIndex = 1; // Start from question ID 1
 
 // For testing purposes only
 export function resetCurrentQuestionIndexForTesting(): void {
-  currentQuestionIndex = 0;
+  currentQuestionIndex = 1;
 }
 
 export async function getNextQuestion(): Promise<string> {
@@ -21,20 +21,33 @@ export async function getNextQuestion(): Promise<string> {
     const sheets = google.sheets({ version: 'v4', auth });
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId: process.env.GOOGLE_SHEETS_ID,
-      range: 'A:A', // Assuming questions are in column A
+      range: 'A2:B', // Get both columns starting from row 2
     });
 
-    const questions = response.data.values?.flat() || [];
-    
-    if (questions.length === 0) {
+    const rows = response.data.values || [];
+
+    if (rows.length === 0) {
       throw new Error('No questions found in the spreadsheet');
     }
 
-    // Get next question and increment index
-    const question = questions[currentQuestionIndex];
-    currentQuestionIndex = (currentQuestionIndex + 1) % questions.length;
-    
-    return question;
+    // Find the row with matching questionID
+    const questionRow = rows.find(row => parseInt(row[0]) === currentQuestionIndex);
+
+    if (!questionRow) {
+      // If we can't find the current index, start over from 1
+      currentQuestionIndex = 1;
+      const firstRow = rows.find(row => parseInt(row[0]) === 1);
+      if (!firstRow) {
+        throw new Error('Could not find question with ID 1');
+      }
+      return firstRow[1]; // Return questionString from column B
+    }
+
+    // Get current question and increment index for next time
+    const questionString = questionRow[1];
+    currentQuestionIndex++;
+
+    return questionString;
   } catch (error) {
     console.error('Error fetching question from Google Sheets:', error);
     throw new Error('Failed to fetch question from Google Sheets');
