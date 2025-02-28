@@ -8,6 +8,51 @@ export function resetCurrentQuestionIndexForTesting(): void {
   currentQuestionIndex = 1;
 }
 
+// Get current question without incrementing index
+export async function getCurrentQuestion(): Promise<string> {
+  try {
+    const auth = new GoogleAuth({
+      credentials: {
+        client_email: process.env.GOOGLE_SHEETS_CLIENT_EMAIL,
+        private_key: process.env.GOOGLE_SHEETS_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+      },
+      scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
+    });
+
+    const sheets = google.sheets({ version: 'v4', auth });
+    const response = await sheets.spreadsheets.values.get({
+      spreadsheetId: process.env.GOOGLE_SHEETS_ID,
+      range: 'A2:B', // Get both columns starting from row 2
+    });
+
+    const rows = response.data.values || [];
+
+    if (rows.length === 0) {
+      throw new Error('No questions found in the spreadsheet');
+    }
+
+    // Find the row with matching questionID
+    const questionRow = rows.find(row => parseInt(row[0]) === currentQuestionIndex);
+
+    if (!questionRow) {
+      throw new Error(`Could not find question with ID ${currentQuestionIndex}`);
+    }
+
+    return questionRow[1]; // Return questionString from column B
+  } catch (error) {
+    console.error('Error fetching current question from Google Sheets:', error);
+    throw new Error('Failed to fetch current question from Google Sheets');
+  }
+}
+
+// Manually set the question index
+export function setQuestionIndex(index: number): void {
+  if (index < 1) {
+    throw new Error('Question index must be greater than 0');
+  }
+  currentQuestionIndex = index;
+}
+
 export async function getNextQuestion(): Promise<string> {
   try {
     const auth = new GoogleAuth({

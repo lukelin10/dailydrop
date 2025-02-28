@@ -5,6 +5,8 @@ import { storage } from "./storage";
 import { insertEntrySchema, updateEntrySchema, insertChatMessageSchema } from "@shared/schema";
 import { nanoid } from "nanoid";
 import { generateChatResponse } from "./openai";
+import { getCurrentQuestion, setQuestionIndex } from "./sheets";
+import { z } from "zod";
 
 export function registerRoutes(app: Express): Server {
   setupAuth(app);
@@ -35,6 +37,38 @@ export function registerRoutes(app: Express): Server {
     } catch (error) {
       console.error("Error fetching daily question:", error);
       res.status(500).json({ message: "Failed to fetch daily question" });
+    }
+  });
+
+  // New endpoint to get current question without incrementing
+  app.get("/api/question/current", async (req, res) => {
+    try {
+      const question = await getCurrentQuestion();
+      res.json({ question, currentIndex: true });
+    } catch (error) {
+      console.error("Error fetching current question:", error);
+      res.status(500).json({ message: "Failed to fetch current question" });
+    }
+  });
+
+  // New endpoint to reset question index
+  app.post("/api/question/reset", async (req, res) => {
+    const schema = z.object({
+      index: z.number().min(1),
+    });
+
+    const parsed = schema.safeParse(req.body);
+    if (!parsed.success) {
+      return res.status(400).json({ message: "Invalid index. Must be a number greater than 0." });
+    }
+
+    try {
+      setQuestionIndex(parsed.data.index);
+      const question = await getCurrentQuestion();
+      res.json({ message: "Question index reset successfully", currentIndex: parsed.data.index, question });
+    } catch (error) {
+      console.error("Error resetting question index:", error);
+      res.status(500).json({ message: "Failed to reset question index" });
     }
   });
 
@@ -87,7 +121,7 @@ export function registerRoutes(app: Express): Server {
 
     const entryId = parseInt(req.params.id);
     console.log('[express] Chat message received:', { entryId, body: req.body });
-    
+
     const entry = await storage.getEntry(req.user.id, entryId);
     if (!entry) {
       console.log('[express] Entry not found:', { entryId, userId: req.user.id });
