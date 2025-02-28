@@ -3,6 +3,11 @@ import { GoogleAuth } from 'google-auth-library';
 
 let currentQuestionIndex = 0;
 
+// For testing purposes only
+export function resetCurrentQuestionIndexForTesting(): void {
+  currentQuestionIndex = 0;
+}
+
 export async function getNextQuestion(): Promise<string> {
   try {
     const auth = new GoogleAuth({
