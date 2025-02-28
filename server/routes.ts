@@ -2,10 +2,10 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth } from "./auth.js";
 import { storage } from "./storage.js";
-import { insertEntrySchema, updateEntrySchema, insertChatMessageSchema } from "@shared/schema";
+import { insertEntrySchema, updateEntrySchema, insertChatMessageSchema } from "@shared/schema.js";
 import { nanoid } from "nanoid";
-import { generateChatResponse } from "./openai";
-import { getCurrentQuestion, setQuestionIndex } from "./sheets";
+import { generateChatResponse } from "./openai.js";
+import { getCurrentQuestion, setQuestionIndex } from "./sheets.js";
 import { z } from "zod";
 
 export function registerRoutes(app: Express): Server {
