@@ -2,7 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth } from "./auth.js";
 import { storage } from "./storage.js";
-import { insertEntrySchema, updateEntrySchema, insertChatMessageSchema } from "@shared/schema.js";
+import { insertEntrySchema, updateEntrySchema, insertChatMessageSchema } from "../shared/schema.js";
 import { nanoid } from "nanoid";
 import { generateChatResponse } from "./openai.js";
 import { getCurrentQuestion, setQuestionIndex } from "./sheets.js";
