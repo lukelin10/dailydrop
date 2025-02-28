@@ -74,6 +74,6 @@ describe('sheets.ts', () => {
       }
     } as any);
 
-    await expect(getNextQuestion()).rejects.toThrow('No questions found in the spreadsheet');
+    await expect(getNextQuestion()).rejects.toThrow('Failed to fetch question from Google Sheets');
   });
 });
