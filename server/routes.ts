@@ -32,6 +32,7 @@ export function registerRoutes(app: Express): Server {
   app.get("/api/question", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     try {
+      // Pass a Date object, but the function will convert it to string if needed
       const question = await storage.getDailyQuestion(new Date());
       res.json({ question });
     } catch (error) {

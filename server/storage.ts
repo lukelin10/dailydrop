@@ -54,6 +54,7 @@ export class DatabaseStorage implements IStorage {
       ...insertEntry,
       isPublic: false,
       shareId: null,
+      date: new Date().toISOString(), // Convert Date to string format
     };
     const [created] = await db.insert(entries).values(entry).returning();
     return created;
