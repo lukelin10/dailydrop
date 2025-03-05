@@ -31,7 +31,7 @@ fs.writeFileSync(destSchemaPath, schemaContent);
 
 // Process server files to update imports
 const serverDistDir = path.join(__dirname, '../dist/server');
-function updateImports(directory: string) {
+function updateImports(directory) {
   const files = fs.readdirSync(directory);
 
   files.forEach(file => {
