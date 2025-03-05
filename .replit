@@ -7,7 +7,7 @@ channel = "stable-24_05"
 
 [deployment]
 deploymentTarget = "cloudrun"
-build = ["sh", "-c", "mkdir -p dist/shared && cp shared/schema.ts dist/shared/schema.js && npm run build && tsc -p server/tsconfig.json && node build.js"]
+build = ["sh", "-c", "bash build-server.sh"]
 run = ["sh", "-c", "node dist/server/index.js"]
 
 [[ports]]
