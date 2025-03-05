@@ -1,3 +1,4 @@
+
 #!/bin/bash
 set -e
 
@@ -19,9 +20,13 @@ npx tsc-alias -p server/tsconfig.json
 echo "Processing shared schema..."
 node build.js
 
-# Step 5: Verify the result
+# Step 5: Fix import paths
+echo "Fixing import paths in server files..."
+node fix-server-imports.js
+
+# Step 6: Verify the result
 echo "Verifying compiled server files..."
-for file in dist/server/auth.js dist/server/db.js dist/server/storage.js dist/server/routes.js; do
+for file in dist/server/auth.js dist/server/db.js dist/server/storage.js dist/server/routes.js dist/server/index.js; do
     if [ -f "$file" ]; then
         echo "✓ $file exists"
         # Check for @shared/ references that didn't get transformed
@@ -33,7 +38,6 @@ for file in dist/server/auth.js dist/server/db.js dist/server/storage.js dist/se
         else
             echo "✓ $file imports look correct"
         fi
-
         # Also check and fix relative imports without .js extension
         if grep -q 'from ["'"'"']\./[^"'"'"']*["'"'"']' "$file" | grep -v '\.js'; then
             echo "⚠️ WARNING: $file contains relative imports without .js extension!"
@@ -43,6 +47,10 @@ for file in dist/server/auth.js dist/server/db.js dist/server/storage.js dist/se
         fi
     else
         echo "✗ $file is missing"
+        if [ "$file" = "dist/server/index.js" ]; then
+            echo "ERROR: index.js is missing! Build failed."
+            exit 1
+        fi
     fi
 done
 

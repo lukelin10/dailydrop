@@ -1,3 +1,4 @@
+
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
@@ -8,7 +9,8 @@ const __dirname = path.dirname(__filename);
 console.log('Starting server imports fix...');
 
 // Process server files to update imports
-const serverDir = path.join(__dirname, 'server');
+const serverDir = path.join(__dirname, 'dist/server');
+
 function updateImports(directory) {
   const files = fs.readdirSync(directory);
 
@@ -19,30 +21,46 @@ function updateImports(directory) {
       return;
     }
 
-    if (!file.endsWith('.ts') && !file.endsWith('.tsx')) return;
+    if (!file.endsWith('.js')) return;
 
     console.log(`Processing ${filePath}`);
     let content = fs.readFileSync(filePath, 'utf-8');
     let modified = false;
     
-    // Convert any direct local imports to use .js extension
-    // Change: import { x } from "./file"; to import { x } from "./file.js";
-    // This is needed for ESM compatibility in Node.js
-    const importRegex = /import\s+(?:[\w\s{},*]+\s+from\s+)?['"]\.\/([^'"]+)['"]/g;
-    content = content.replace(importRegex, (match, p1) => {
-      if (p1.endsWith('.js')) return match;
-      modified = true;
-      return match.replace(`"./${p1}"`, `"./${p1}.js"`);
-    });
-
-    // Same for parent directory imports
-    const parentImportRegex = /import\s+(?:[\w\s{},*]+\s+from\s+)?['"]\.\.\/(?!shared)([^'"]+)['"]/g;
-    content = content.replace(parentImportRegex, (match, p1) => {
-      if (p1.endsWith('.js')) return match;
-      modified = true;
-      return match.replace(`"../${p1}"`, `"../${p1}.js"`);
-    });
-
+    // Fix @shared/ imports based on file location
+    const relativeToRoot = path.relative(path.dirname(filePath), path.join(__dirname, 'dist'));
+    const pathToShared = path.join(relativeToRoot, 'shared').replace(/\\/g, '/');
+    
+    // Fix imports without .js extension
+    content = content.replace(
+      /from ['"](\.\/[^'"]+)['"](?!\.js)/g, 
+      (match, p1) => {
+        modified = true;
+        return `from "${p1}.js"`;
+      }
+    );
+    
+    content = content.replace(
+      /from ['"](\.\.(?:\/\.\.)*\/[^'"]+)['"](?!\.js)/g, 
+      (match, p1) => {
+        modified = true;
+        return `from "${p1}.js"`;
+      }
+    );
+    
+    // Fix @shared imports
+    content = content.replace(
+      /from ['"]([@\w][^'"]*)['"](?!\.js)/g, 
+      (match, p1) => {
+        if (p1.startsWith('@shared/')) {
+          const importPath = p1.replace('@shared/', '');
+          modified = true;
+          return `from "${pathToShared}/${importPath}.js"`;
+        }
+        return match;
+      }
+    );
+    
     if (modified) {
       fs.writeFileSync(filePath, content);
       console.log(`Updated imports in ${filePath}`);
@@ -50,10 +68,10 @@ function updateImports(directory) {
   });
 }
 
-try {
+if (fs.existsSync(serverDir)) {
   updateImports(serverDir);
   console.log('Server imports fixed successfully');
-} catch (error) {
-  console.error('Error fixing server imports:', error);
+} else {
+  console.error('Error: Server directory not found at', serverDir);
   process.exit(1);
 }
