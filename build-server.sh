@@ -24,9 +24,14 @@ node build.js
 echo "Fixing import paths in server files..."
 node fix-server-imports.js
 
+# Step 6: Copy the index.js file to the expected location for deployment
+echo "Copying index.js to deployment location..."
+mkdir -p dist/server
+cp dist/server/server/index.js dist/server/index.js
+
 # Step 6: Verify the result
 echo "Verifying compiled server files..."
-for file in dist/server/auth.js dist/server/db.js dist/server/storage.js dist/server/routes.js dist/server/index.js; do
+for file in dist/server/server/auth.js dist/server/server/db.js dist/server/server/storage.js dist/server/server/routes.js dist/server/server/index.js; do
     if [ -f "$file" ]; then
         echo "✓ $file exists"
         # Check for @shared/ references that didn't get transformed

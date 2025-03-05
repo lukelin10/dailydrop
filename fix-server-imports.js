@@ -9,7 +9,7 @@ const __dirname = path.dirname(__filename);
 console.log('Starting server imports fix...');
 
 // Process server files to update imports
-const serverDir = path.join(__dirname, 'dist/server');
+const serverDir = path.join(__dirname, 'dist/server/server');
 
 function updateImports(directory) {
   const files = fs.readdirSync(directory);
