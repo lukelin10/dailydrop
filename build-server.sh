@@ -18,7 +18,7 @@ npx tsc-alias -p server/tsconfig.json
 
 # Step 4: Ensure shared schema is available
 echo "Processing shared schema..."
-node build.js
+node dist/server/build-utils.js
 
 # Step 5: Fix import paths
 echo "Fixing import paths in server files..."
