@@ -1,4 +1,3 @@
-
 #!/bin/bash
 set -e
 
@@ -12,51 +11,33 @@ mkdir -p dist/server
 echo "Compiling server TypeScript code..."
 npx tsc -p server/tsconfig.json
 
-# Step 3: Transform path aliases
-echo "Transforming path aliases..."
-npx tsc-alias -p server/tsconfig.json
-
-# Step 4: Ensure shared schema is available
+# Step 3: Copy and transform shared schema
 echo "Processing shared schema..."
-node dist/server/build-utils.js
+cp shared/schema.ts dist/shared/schema.js
+sed -i 's/import {.*} from "\(.*\)";/import {\1} from "\1.js";/g' dist/shared/schema.js
 
-# Step 5: Fix import paths
+# Step 4: Fix import paths in server files
 echo "Fixing import paths in server files..."
-node fix-server-imports.js
+for file in dist/server/server/*.js; do
+  # Convert @shared imports to relative paths
+  sed -i 's|from ["'"'"']@shared/\([^"'"'"']*\)["'"'"']|from "../shared/\1.js"|g' "$file"
+  # Add .js extension to relative imports
+  sed -i 's|from ["'"'"']\./\([^"'"'"']*\)["'"'"']|from "./\1.js"|g' "$file"
+  sed -i 's|from ["'"'"']\.\.\/\([^"'"'"']*\)["'"'"']|from "../\1.js"|g' "$file"
+done
 
-# Step 6: Copy the index.js file to the expected location for deployment
-echo "Copying index.js to deployment location..."
-mkdir -p dist/server
+# Step 5: Move index.js to correct location
+echo "Setting up entry point..."
 cp dist/server/server/index.js dist/server/index.js
 
-# Step 6: Verify the result
-echo "Verifying compiled server files..."
-for file in dist/server/server/auth.js dist/server/server/db.js dist/server/server/storage.js dist/server/server/routes.js dist/server/server/index.js; do
-    if [ -f "$file" ]; then
-        echo "✓ $file exists"
-        # Check for @shared/ references that didn't get transformed
-        if grep -q '@shared/' "$file"; then
-            echo "⚠️ WARNING: $file still contains @shared/ imports!"
-            # Manual fix as a last resort
-            sed -i 's|from ["'"'"']@shared\/\([^"'"'"']*\)["'"'"']|from "../shared/\1.js"|g' "$file"
-            echo "Applied manual fix to $file"
-        else
-            echo "✓ $file imports look correct"
-        fi
-        # Also check and fix relative imports without .js extension
-        if grep -q 'from ["'"'"']\./[^"'"'"']*["'"'"']' "$file" | grep -v '\.js'; then
-            echo "⚠️ WARNING: $file contains relative imports without .js extension!"
-            # Fix relative imports
-            sed -i 's|from ["'"'"']\./\([^"'"'"']*\)["'"'"']|from "./\1.js"|g' "$file"
-            echo "Fixed relative imports in $file"
-        fi
-    else
-        echo "✗ $file is missing"
-        if [ "$file" = "dist/server/index.js" ]; then
-            echo "ERROR: index.js is missing! Build failed."
-            exit 1
-        fi
-    fi
+# Step 6: Verify critical files
+echo "Verifying build artifacts..."
+required_files=("dist/server/index.js" "dist/shared/schema.js")
+for file in "${required_files[@]}"; do
+  if [ ! -f "$file" ]; then
+    echo "ERROR: Required file $file is missing!"
+    exit 1
+  fi
 done
 
 echo "Server build completed successfully"

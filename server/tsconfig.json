@@ -10,8 +10,7 @@
     "rootDir": "..",
     "baseUrl": "..",
     "paths": {
-      "@/*": ["client/src/*"],
-      "@shared/*": ["shared/*"]
+      "@/*": ["client/src/*"]
     },
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
