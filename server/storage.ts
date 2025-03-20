@@ -138,30 +138,34 @@ export class DatabaseStorage implements IStorage {
   }
   
   async getUnanalyzedEntriesCount(userId: number): Promise<number> {
-    let query = db
-      .select({ count: db.fn.count() })
-      .from(entries)
-      .where(and(
-        eq(entries.userId, userId),
-        isNull(entries.analyzedAt)
-      ));
+    try {
+      // Simplified query that works consistently with PostgreSQL
+      const result = await db.execute(
+        `SELECT COUNT(*) FROM entries 
+         WHERE user_id = $1 AND analyzed_at IS NULL`,
+        [userId]
+      );
+
+      // Log the result to see its structure
+      console.log('Count query result:', JSON.stringify(result));
       
-    const result = await query;
-    
-    // Handle different formats of count results that Postgres might return
-    if (result && result.length > 0) {
-      const countValue = result[0].count;
-      if (countValue === null || countValue === undefined) {
-        return 0;
+      // Extract the count directly from the first row
+      if (result && result.length > 0 && result[0]) {
+        // PostgreSQL typically returns the count as the first column
+        const countValue = result[0].count || result[0]['COUNT(*)'] || Object.values(result[0])[0];
+        
+        if (countValue !== undefined && countValue !== null) {
+          return typeof countValue === 'number' 
+            ? countValue 
+            : parseInt(String(countValue));
+        }
       }
       
-      // The count could be returned as string, number, or bigint
-      return typeof countValue === 'number' 
-        ? countValue 
-        : parseInt(String(countValue));
+      return 0;
+    } catch (error) {
+      console.error('Error in getUnanalyzedEntriesCount:', error);
+      return 0;
     }
-    
-    return 0;
   }
   
   async getUnanalyzedEntries(userId: number): Promise<Entry[]> {
