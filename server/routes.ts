@@ -253,12 +253,22 @@ export function registerRoutes(app: Express): Server {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     
     try {
-      const analysis = await storage.getAnalysis(req.user.id, parseInt(req.params.id));
+      console.log(`Fetching analysis with ID: ${req.params.id} for user: ${req.user.id}`);
+      
+      const analysisId = parseInt(req.params.id);
+      if (isNaN(analysisId)) {
+        console.error(`Invalid analysis ID: ${req.params.id}`);
+        return res.status(400).json({ message: "Invalid analysis ID" });
+      }
+      
+      const analysis = await storage.getAnalysis(req.user.id, analysisId);
       
       if (!analysis) {
+        console.log(`Analysis not found with ID: ${analysisId} for user: ${req.user.id}`);
         return res.status(404).json({ message: "Analysis not found" });
       }
       
+      console.log(`Analysis found: ${JSON.stringify(analysis)}`);
       res.json(analysis);
     } catch (error) {
       console.error("Error fetching analysis:", error);

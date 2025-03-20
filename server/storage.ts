@@ -353,14 +353,32 @@ export class DatabaseStorage implements IStorage {
    * @returns The requested analysis or undefined if not found
    */
   async getAnalysis(userId: number, id: number): Promise<Analysis | undefined> {
-    const [analysis] = await db
-      .select()
-      .from(analyses)
-      .where(and(
-        eq(analyses.userId, userId),
-        eq(analyses.id, id)
-      ));
-    return analysis;
+    console.log(`[storage] Looking up analysis: userId=${userId}, id=${id}`);
+    
+    try {
+      const result = await db
+        .select()
+        .from(analyses)
+        .where(and(
+          eq(analyses.userId, userId),
+          eq(analyses.id, id)
+        ));
+      
+      console.log(`[storage] Query result: ${JSON.stringify(result)}`);
+      
+      const [analysis] = result;
+      
+      if (!analysis) {
+        console.log(`[storage] No analysis found for userId=${userId}, id=${id}`);
+      } else {
+        console.log(`[storage] Found analysis: ${JSON.stringify(analysis)}`);
+      }
+      
+      return analysis;
+    } catch (error) {
+      console.error(`[storage] Error retrieving analysis: ${error}`);
+      throw error;
+    }
   }
   
   /**

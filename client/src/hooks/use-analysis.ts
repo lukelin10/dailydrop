@@ -16,8 +16,9 @@ export function useAnalyses() {
 }
 
 export function useAnalysis(id: number | null) {
+  console.log(`useAnalysis hook called with id: ${id}`);
   return useQuery<Analysis>({
-    queryKey: ["/api/analysis", id],
+    queryKey: [`/api/analysis/${id}`],
     enabled: id !== null,
   });
 }
