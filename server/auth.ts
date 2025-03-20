@@ -1,3 +1,4 @@
+// This is a single-line comment
 import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import { Express } from "express";
