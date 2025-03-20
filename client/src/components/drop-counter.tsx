@@ -66,21 +66,26 @@ export default function DropCounter() {
           {count}/{ANALYSIS_THRESHOLD} drops
         </div>
         <div className="flex gap-2">
-          <Button 
-            variant="outline" 
-            size="sm"
-            disabled={!isAnalysisReady || createAnalysisMutation.isPending}
-            onClick={handleCreateAnalysis}
-          >
-            {createAnalysisMutation.isPending ? (
-              <>
-                <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-                Analyzing...
-              </>
-            ) : (
-              isAnalysisReady ? "New Analysis" : "Need more drops"
-            )}
-          </Button>
+          {isAnalysisReady && (
+            <Button 
+              variant="outline" 
+              size="sm"
+              disabled={createAnalysisMutation.isPending}
+              onClick={handleCreateAnalysis}
+            >
+              {createAnalysisMutation.isPending ? (
+                <>
+                  <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+                  Analyzing...
+                </>
+              ) : "New Analysis"}
+            </Button>
+          )}
+          {!isAnalysisReady && (
+            <div className="text-xs text-muted-foreground italic">
+              Unlock analysis with more drops
+            </div>
+          )}
           <Button asChild variant="ghost" size="sm">
             <Link href={`/analysis/${latestAnalysis.id}`}>
               Latest
@@ -97,21 +102,25 @@ export default function DropCounter() {
       <div className={`text-xs ${isAnalysisReady ? 'text-green-500 font-medium' : 'text-muted-foreground'}`}>
         {count}/{ANALYSIS_THRESHOLD} drops
       </div>
-      <Button 
-        variant="outline" 
-        size="sm"
-        disabled={!isAnalysisReady || createAnalysisMutation.isPending}
-        onClick={handleCreateAnalysis}
-      >
-        {createAnalysisMutation.isPending ? (
-          <>
-            <Loader2 className="w-3 h-3 mr-1 animate-spin" />
-            Analyzing...
-          </>
-        ) : (
-          isAnalysisReady ? "Analyze My Drops" : "Need more drops"
-        )}
-      </Button>
+      {isAnalysisReady ? (
+        <Button 
+          variant="outline" 
+          size="sm"
+          disabled={createAnalysisMutation.isPending}
+          onClick={handleCreateAnalysis}
+        >
+          {createAnalysisMutation.isPending ? (
+            <>
+              <Loader2 className="w-3 h-3 mr-1 animate-spin" />
+              Analyzing...
+            </>
+          ) : "Analyze My Drops"}
+        </Button>
+      ) : (
+        <div className="text-xs text-muted-foreground italic">
+          Unlock analysis with more drops
+        </div>
+      )}
     </div>
   );
 }

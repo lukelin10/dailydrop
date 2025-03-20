@@ -139,29 +139,17 @@ export class DatabaseStorage implements IStorage {
   
   async getUnanalyzedEntriesCount(userId: number): Promise<number> {
     try {
-      // Simplified query that works consistently with PostgreSQL
-      const result = await db.execute(
-        `SELECT COUNT(*) FROM entries 
-         WHERE user_id = $1 AND analyzed_at IS NULL`,
-        [userId]
-      );
-
-      // Log the result to see its structure
-      console.log('Count query result:', JSON.stringify(result));
+      // Use Drizzle ORM for the query instead of raw SQL
+      const result = await db
+        .select()
+        .from(entries)
+        .where(and(
+          eq(entries.userId, userId),
+          isNull(entries.analyzedAt)
+        ));
       
-      // Extract the count directly from the first row
-      if (result && result.length > 0 && result[0]) {
-        // PostgreSQL typically returns the count as the first column
-        const countValue = result[0].count || result[0]['COUNT(*)'] || Object.values(result[0])[0];
-        
-        if (countValue !== undefined && countValue !== null) {
-          return typeof countValue === 'number' 
-            ? countValue 
-            : parseInt(String(countValue));
-        }
-      }
-      
-      return 0;
+      // Simply return the length of results array
+      return result.length;
     } catch (error) {
       console.error('Error in getUnanalyzedEntriesCount:', error);
       return 0;
