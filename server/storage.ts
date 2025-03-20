@@ -279,9 +279,8 @@ export class DatabaseStorage implements IStorage {
       console.log(`Found ${result.length} unanalyzed entries for user ${userId}:`, 
         result.map(e => ({ id: e.id, date: e.date })));
       
-      // Return 0 for testing purposes (this will be changed once the issue is diagnosed)
-      // In production, this would be: return result.length;
-      return 0;
+      // Return the actual count of unanalyzed entries
+      return result.length;
     } catch (error) {
       console.error('Error in getUnanalyzedEntriesCount:', error);
       return 0;
