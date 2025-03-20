@@ -12,7 +12,7 @@ import {
   InsertAnalysis, Analysis, users, entries, chatMessages, analyses
 } from "../shared/schema.js";
 import { db } from "./db.js";
-import { eq, and, isNull, lt, desc } from "drizzle-orm";
+import { eq, and, isNull, lt, desc, inArray } from "drizzle-orm";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db.js";
@@ -379,7 +379,7 @@ export class DatabaseStorage implements IStorage {
       .set({ analyzedAt: now })
       .where(and(
         eq(entries.userId, userId),
-        entries.id.in(entryIds)
+        inArray(entries.id, entryIds)
       ));
   }
   
