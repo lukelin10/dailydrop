@@ -147,7 +147,21 @@ export class DatabaseStorage implements IStorage {
       ));
       
     const result = await query;
-    return parseInt(result[0].count as string);
+    
+    // Handle different formats of count results that Postgres might return
+    if (result && result.length > 0) {
+      const countValue = result[0].count;
+      if (countValue === null || countValue === undefined) {
+        return 0;
+      }
+      
+      // The count could be returned as string, number, or bigint
+      return typeof countValue === 'number' 
+        ? countValue 
+        : parseInt(String(countValue));
+    }
+    
+    return 0;
   }
   
   async getUnanalyzedEntries(userId: number): Promise<Entry[]> {
