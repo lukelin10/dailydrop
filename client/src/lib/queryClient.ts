@@ -33,9 +33,22 @@ export const getQueryFn: <T>(options: {
   async ({ queryKey }) => {
     // Handle query keys that include an ID parameter
     let url: string;
-    if (queryKey.length > 1 && queryKey[1] !== null && queryKey[1] !== undefined) {
-      url = `${queryKey[0]}/${queryKey[1]}`;
+    
+    // If the queryKey is an array with more than one element
+    if (Array.isArray(queryKey) && queryKey.length > 1) {
+      const baseUrl = queryKey[0] as string;
+      const id = queryKey[1];
+      
+      if (id !== null && id !== undefined) {
+        // Ensure we have a clean URL without double slashes
+        url = baseUrl.endsWith('/') 
+          ? `${baseUrl}${id}` 
+          : `${baseUrl}/${id}`;
+      } else {
+        url = baseUrl;
+      }
     } else {
+      // Simple case - just a string URL
       url = queryKey[0] as string;
     }
 
