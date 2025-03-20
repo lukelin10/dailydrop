@@ -1,6 +1,9 @@
-import { User, InsertUser, Entry, InsertEntry, InsertChatMessage, ChatMessage, users, entries, chatMessages } from "../shared/schema.js";
+import { 
+  User, InsertUser, Entry, InsertEntry, InsertChatMessage, ChatMessage,
+  InsertAnalysis, Analysis, users, entries, chatMessages, analyses
+} from "../shared/schema.js";
 import { db } from "./db.js";
-import { eq, and } from "drizzle-orm";
+import { eq, and, isNull, lt, desc } from "drizzle-orm";
 import session from "express-session";
 import connectPg from "connect-pg-simple";
 import { pool } from "./db.js";
@@ -21,6 +24,15 @@ export interface IStorage {
   getDailyQuestion(date: Date): Promise<string>;
   createChatMessage(message: InsertChatMessage & { userId: number }): Promise<ChatMessage>;
   getChatMessages(entryId: number): Promise<ChatMessage[]>;
+  
+  // Analysis related methods
+  getUnanalyzedEntriesCount(userId: number): Promise<number>;
+  getUnanalyzedEntries(userId: number): Promise<Entry[]>;
+  createAnalysis(userId: number, analysis: InsertAnalysis): Promise<Analysis>;
+  getAnalyses(userId: number): Promise<Analysis[]>;
+  getAnalysis(userId: number, id: number): Promise<Analysis | undefined>;
+  markEntriesAsAnalyzed(userId: number, entryIds: number[]): Promise<void>;
+  updateUserLastAnalysisTime(userId: number): Promise<void>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -123,6 +135,78 @@ export class DatabaseStorage implements IStorage {
       .from(chatMessages)
       .where(eq(chatMessages.entryId, entryId))
       .orderBy(chatMessages.createdAt);
+  }
+  
+  async getUnanalyzedEntriesCount(userId: number): Promise<number> {
+    let query = db
+      .select({ count: db.fn.count() })
+      .from(entries)
+      .where(and(
+        eq(entries.userId, userId),
+        isNull(entries.analyzedAt)
+      ));
+      
+    const result = await query;
+    return parseInt(result[0].count as string);
+  }
+  
+  async getUnanalyzedEntries(userId: number): Promise<Entry[]> {
+    return await db
+      .select()
+      .from(entries)
+      .where(and(
+        eq(entries.userId, userId),
+        isNull(entries.analyzedAt)
+      ))
+      .orderBy(entries.createdAt);
+  }
+  
+  async createAnalysis(userId: number, analysis: InsertAnalysis): Promise<Analysis> {
+    const [created] = await db
+      .insert(analyses)
+      .values({
+        ...analysis,
+        userId
+      })
+      .returning();
+    return created;
+  }
+  
+  async getAnalyses(userId: number): Promise<Analysis[]> {
+    return await db
+      .select()
+      .from(analyses)
+      .where(eq(analyses.userId, userId))
+      .orderBy(desc(analyses.createdAt));
+  }
+  
+  async getAnalysis(userId: number, id: number): Promise<Analysis | undefined> {
+    const [analysis] = await db
+      .select()
+      .from(analyses)
+      .where(and(
+        eq(analyses.userId, userId),
+        eq(analyses.id, id)
+      ));
+    return analysis;
+  }
+  
+  async markEntriesAsAnalyzed(userId: number, entryIds: number[]): Promise<void> {
+    const now = new Date();
+    await db
+      .update(entries)
+      .set({ analyzedAt: now })
+      .where(and(
+        eq(entries.userId, userId),
+        entries.id.in(entryIds)
+      ));
+  }
+  
+  async updateUserLastAnalysisTime(userId: number): Promise<void> {
+    await db
+      .update(users)
+      .set({ lastAnalysisAt: new Date() })
+      .where(eq(users.id, userId));
   }
 }
 

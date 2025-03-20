@@ -6,6 +6,7 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
+  lastAnalysisAt: timestamp("last_analysis_at"),
 });
 
 export const entries = pgTable("entries", {
@@ -17,6 +18,7 @@ export const entries = pgTable("entries", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
   isPublic: boolean("is_public").notNull().default(false),
   shareId: text("share_id"), // This makes it nullable by default
+  analyzedAt: timestamp("analyzed_at"), // When this entry was last included in an analysis
 });
 
 export const chatMessages = pgTable("chat_messages", {
@@ -25,6 +27,14 @@ export const chatMessages = pgTable("chat_messages", {
   userId: integer("user_id").notNull(),
   content: text("content").notNull(),
   isBot: boolean("is_bot").notNull(),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+});
+
+export const analyses = pgTable("analyses", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  content: text("content").notNull(),
+  entryCount: integer("entry_count").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
@@ -56,9 +66,17 @@ export const insertChatMessageSchema = createInsertSchema(chatMessages)
     entryId: z.number(),
   });
 
+export const insertAnalysisSchema = createInsertSchema(analyses)
+  .pick({
+    content: true,
+    entryCount: true,
+  });
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertEntry = z.infer<typeof insertEntrySchema>;
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
+export type InsertAnalysis = z.infer<typeof insertAnalysisSchema>;
 export type User = typeof users.$inferSelect;
 export type Entry = typeof entries.$inferSelect;
 export type ChatMessage = typeof chatMessages.$inferSelect;
+export type Analysis = typeof analyses.$inferSelect;
