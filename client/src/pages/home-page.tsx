@@ -4,6 +4,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { Entry } from "@shared/schema";
 import Editor from "@/components/editor";
 import ChatInterface from "@/components/chat-interface";
+import DropCounter from "@/components/drop-counter";
 import { Loader2, LogOut, Share2 } from "lucide-react";
 import { useState } from "react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -98,7 +99,7 @@ export default function HomePage() {
             Drop
           </h1>
           <div className="flex items-center gap-4">
-            {showFeed && <DropCounter />}
+            <DropCounter />
             <span className="text-sm text-muted-foreground">
               User
             </span>
@@ -132,12 +133,17 @@ export default function HomePage() {
                   {todayEntry.answer}
                 </div>
                 {!showChat && (
-                  <Button onClick={() => {
-                    setCurrentEntryId(todayEntry.id);
-                    setShowChat(true);
-                  }}>
-                    Chat with DropBot
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button onClick={() => {
+                      setCurrentEntryId(todayEntry.id);
+                      setShowChat(true);
+                    }}>
+                      Chat with DropBot
+                    </Button>
+                    <Button variant="outline" onClick={() => setShowFeed(true)}>
+                      View All Drops
+                    </Button>
+                  </div>
                 )}
               </div>
             )}
