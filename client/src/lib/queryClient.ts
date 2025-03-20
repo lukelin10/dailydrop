@@ -31,7 +31,17 @@ export const getQueryFn: <T>(options: {
 }) => QueryFunction<T> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
-    const res = await fetch(queryKey[0] as string, {
+    // Handle query keys that include an ID parameter
+    let url: string;
+    if (queryKey.length > 1 && queryKey[1] !== null && queryKey[1] !== undefined) {
+      url = `${queryKey[0]}/${queryKey[1]}`;
+    } else {
+      url = queryKey[0] as string;
+    }
+
+    console.log("API Request URL:", url);
+
+    const res = await fetch(url, {
       credentials: "include",
     });
 
