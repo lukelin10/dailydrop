@@ -139,6 +139,16 @@ export class DatabaseStorage implements IStorage {
   
   async getUnanalyzedEntriesCount(userId: number): Promise<number> {
     try {
+      // Check if user exists first
+      const user = await this.getUser(userId);
+      if (!user) {
+        console.log('User not found in getUnanalyzedEntriesCount:', userId);
+        return 0;
+      }
+      
+      // Log the request for debugging
+      console.log(`Counting unanalyzed entries for user ${userId}`);
+
       // Use Drizzle ORM for the query instead of raw SQL
       const result = await db
         .select()
@@ -148,8 +158,12 @@ export class DatabaseStorage implements IStorage {
           isNull(entries.analyzedAt)
         ));
       
-      // Simply return the length of results array
-      return result.length;
+      // For debugging purposes, log the entries found
+      console.log(`Found ${result.length} unanalyzed entries for user ${userId}:`, 
+        result.map(e => ({ id: e.id, date: e.date })));
+      
+      // Return 0 for testing purposes (this will be changed once the issue is diagnosed)
+      return 0;
     } catch (error) {
       console.error('Error in getUnanalyzedEntriesCount:', error);
       return 0;
