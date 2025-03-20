@@ -98,6 +98,7 @@ export default function HomePage() {
             Drop
           </h1>
           <div className="flex items-center gap-4">
+            {showFeed && <DropCounter />}
             <span className="text-sm text-muted-foreground">
               User
             </span>

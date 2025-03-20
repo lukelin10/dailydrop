@@ -2,9 +2,9 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth } from "./auth.js";
 import { storage } from "./storage.js";
-import { insertEntrySchema, updateEntrySchema, insertChatMessageSchema } from "../shared/schema.js";
+import { insertEntrySchema, updateEntrySchema, insertChatMessageSchema, insertAnalysisSchema } from "../shared/schema.js";
 import { nanoid } from "nanoid";
-import { generateChatResponse } from "./openai.js";
+import { generateChatResponse, generateAnalysis } from "./openai.js";
 import { getCurrentQuestion, setQuestionIndex } from "./sheets.js";
 import { z } from "zod";
 
@@ -173,6 +173,96 @@ export function registerRoutes(app: Express): Server {
     } catch (error) {
       console.error("Error generating chat response:", error);
       res.json([userMessage]);
+    }
+  });
+
+  // Analysis endpoints
+  app.get("/api/analysis/count", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    
+    try {
+      const count = await storage.getUnanalyzedEntriesCount(req.user.id);
+      res.json({ count });
+    } catch (error) {
+      console.error("Error getting unanalyzed entries count:", error);
+      res.status(500).json({ message: "Failed to get unanalyzed entries count" });
+    }
+  });
+
+  app.post("/api/analysis", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    
+    try {
+      // Get unanalyzed entries
+      const entries = await storage.getUnanalyzedEntries(req.user.id);
+      
+      if (entries.length === 0) {
+        return res.status(400).json({ message: "No entries to analyze" });
+      }
+      
+      // Prepare entries with their chat messages for analysis
+      const entriesWithChats = await Promise.all(
+        entries.map(async (entry) => {
+          const chatMessages = await storage.getChatMessages(entry.id);
+          return {
+            question: entry.question,
+            answer: entry.answer,
+            chatMessages
+          };
+        })
+      );
+      
+      // Generate analysis using OpenAI
+      const analysisContent = await generateAnalysis(entriesWithChats);
+      
+      // Create analysis record
+      const analysis = await storage.createAnalysis(req.user.id, {
+        content: analysisContent,
+        entryCount: entries.length
+      });
+      
+      // Mark entries as analyzed
+      await storage.markEntriesAsAnalyzed(
+        req.user.id, 
+        entries.map(entry => entry.id)
+      );
+      
+      // Update user's last analysis time
+      await storage.updateUserLastAnalysisTime(req.user.id);
+      
+      res.status(201).json(analysis);
+    } catch (error) {
+      console.error("Error generating analysis:", error);
+      res.status(500).json({ message: "Failed to generate analysis" });
+    }
+  });
+
+  app.get("/api/analysis", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    
+    try {
+      const analyses = await storage.getAnalyses(req.user.id);
+      res.json(analyses);
+    } catch (error) {
+      console.error("Error fetching analyses:", error);
+      res.status(500).json({ message: "Failed to fetch analyses" });
+    }
+  });
+
+  app.get("/api/analysis/:id", async (req, res) => {
+    if (!req.isAuthenticated()) return res.sendStatus(401);
+    
+    try {
+      const analysis = await storage.getAnalysis(req.user.id, parseInt(req.params.id));
+      
+      if (!analysis) {
+        return res.status(404).json({ message: "Analysis not found" });
+      }
+      
+      res.json(analysis);
+    } catch (error) {
+      console.error("Error fetching analysis:", error);
+      res.status(500).json({ message: "Failed to fetch analysis" });
     }
   });
 
