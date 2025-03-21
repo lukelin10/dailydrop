@@ -80,6 +80,7 @@ export default function ChatInterface({ entryId, question, answer, onEndChat }: 
 
   const handleEndChat = () => {
     setIsChatEnded(true);
+    // Call the parent component's callback to navigate to feed page
     onEndChat();
   };
 

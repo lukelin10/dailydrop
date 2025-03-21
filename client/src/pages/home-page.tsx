@@ -49,14 +49,12 @@ export default function HomePage() {
     (entry) => new Date(entry.date).toDateString() === new Date().toDateString(),
   );
   
-  // Show chat automatically when entries load if there's an entry for today
+  // On initial load, if there's an entry for today, immediately show the chat interface
   useEffect(() => {
-    if (!entriesLoading && entries.length > 0) {
-      // Check if there's an entry for today and automatically show chat
-      if (todayEntry) {
-        setCurrentEntryId(todayEntry.id);
-        setShowChat(true);
-      }
+    if (!entriesLoading && entries.length > 0 && todayEntry) {
+      // Set the entry and show chat automatically for today's entry
+      setCurrentEntryId(todayEntry.id);
+      setShowChat(true);
     }
   }, [entries, entriesLoading, todayEntry]);
 
