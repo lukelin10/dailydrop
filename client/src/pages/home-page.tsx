@@ -8,10 +8,12 @@ import { useState, useEffect } from "react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import MainNavigation from "@/components/main-navigation";
+import { useLocation } from "wouter";
 
 export default function HomePage() {
   const [showChat, setShowChat] = useState(false);
   const [currentEntryId, setCurrentEntryId] = useState<number | null>(null);
+  const [, setLocation] = useLocation();
 
   const { data: entries = [], isLoading: entriesLoading } = useQuery<Entry[]>({
     queryKey: ["/api/entries"]
@@ -70,15 +72,12 @@ export default function HomePage() {
   }
 
   const handleEndChat = () => {
-    // If there's an entry for today, show that entry view instead of the editor
-    if (todayEntry) {
-      setShowChat(false);
-      setCurrentEntryId(null);
-    } else {
-      // No entry for today (this shouldn't happen with the new flow, but just in case)
-      setShowChat(false);
-      setCurrentEntryId(null);
-    }
+    // Reset local state
+    setShowChat(false);
+    setCurrentEntryId(null);
+    
+    // Navigate to the feed page
+    setLocation("/feed");
   };
 
   return (
