@@ -21,6 +21,7 @@ export default function HomePage() {
 
   const { data: dailyQuestion, isLoading: questionLoading } = useQuery<{
     question: string;
+    questionId: number;
   }>({
     queryKey: ["/api/question"],
   });
@@ -29,6 +30,7 @@ export default function HomePage() {
     mutationFn: async (answer: string) => {
       const data = {
         question: dailyQuestion?.question,
+        questionId: dailyQuestion?.questionId,
         answer,
         date: new Date(),
       };

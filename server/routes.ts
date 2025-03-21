@@ -33,8 +33,8 @@ export function registerRoutes(app: Express): Server {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     try {
       // Pass a Date object, but the function will convert it to string if needed
-      const question = await storage.getDailyQuestion(new Date());
-      res.json({ question });
+      const questionData = await storage.getDailyQuestion(new Date());
+      res.json(questionData);
     } catch (error) {
       console.error("Error fetching daily question:", error);
       res.status(500).json({ message: "Failed to fetch daily question" });
