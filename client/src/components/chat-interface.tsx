@@ -94,7 +94,7 @@ export default function ChatInterface({ entryId, question, answer, onEndChat }: 
       <div className="p-4 border-b">
         <h2 className="text-lg font-semibold">Chat with DropBot</h2>
         <p className="text-sm text-muted-foreground">
-          Let's reflect on your thoughts together
+          Let's reflect on your thoughts about today's drop together
         </p>
       </div>
 
@@ -171,7 +171,10 @@ export default function ChatInterface({ entryId, question, answer, onEndChat }: 
         ) : (
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground text-center">
-              DropBot chats are limited to 7 messages
+              You've reached the limit of 7 messages in this conversation
+            </p>
+            <p className="text-xs text-muted-foreground text-center">
+              Return tomorrow for a new question and conversation
             </p>
             <div className="flex justify-center">
               <Button

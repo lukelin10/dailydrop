@@ -49,11 +49,14 @@ export default function HomePage() {
   
   // Show chat automatically when entries load if there's an entry for today
   useEffect(() => {
-    if (todayEntry && !showChat && !entriesLoading) {
-      setCurrentEntryId(todayEntry.id);
-      setShowChat(true);
+    if (!entriesLoading && entries.length > 0) {
+      // Check if there's an entry for today and automatically show chat
+      if (todayEntry) {
+        setCurrentEntryId(todayEntry.id);
+        setShowChat(true);
+      }
     }
-  }, [todayEntry, showChat, entriesLoading]);
+  }, [entries, entriesLoading, todayEntry]);
 
   if (entriesLoading || questionLoading) {
     return (
@@ -67,8 +70,15 @@ export default function HomePage() {
   }
 
   const handleEndChat = () => {
-    setShowChat(false);
-    setCurrentEntryId(null);
+    // If there's an entry for today, show that entry view instead of the editor
+    if (todayEntry) {
+      setShowChat(false);
+      setCurrentEntryId(null);
+    } else {
+      // No entry for today (this shouldn't happen with the new flow, but just in case)
+      setShowChat(false);
+      setCurrentEntryId(null);
+    }
   };
 
   return (
@@ -103,11 +113,19 @@ export default function HomePage() {
                 </div>
               ) : (
                 <div className="space-y-4 border rounded-lg p-6">
-                  <p className="text-lg font-medium">{todayEntry.question}</p>
+                  <div className="flex items-center justify-between mb-2">
+                    <p className="text-lg font-medium">{todayEntry.question}</p>
+                    <div className="text-sm text-muted-foreground bg-muted px-2 py-1 rounded-md">
+                      Already answered today
+                    </div>
+                  </div>
                   <div className="prose prose-sm max-w-none">
                     {todayEntry.answer}
                   </div>
-                  <div className="flex gap-2">
+                  <div className="flex flex-col gap-2">
+                    <p className="text-sm text-muted-foreground">
+                      You've already answered today's question. Continue the conversation with DropBot for deeper insights.
+                    </p>
                     <Button 
                       onClick={() => {
                         setCurrentEntryId(todayEntry.id);
