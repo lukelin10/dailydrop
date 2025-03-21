@@ -14,7 +14,7 @@ export default function HomePage() {
   const [currentEntryId, setCurrentEntryId] = useState<number | null>(null);
 
   const { data: entries = [], isLoading: entriesLoading } = useQuery<Entry[]>({
-    queryKey: ["/api/entries"],
+    queryKey: ["/api/entries"]
   });
 
   const { data: dailyQuestion, isLoading: questionLoading } = useQuery<{
@@ -46,6 +46,14 @@ export default function HomePage() {
   const todayEntry = entries.find(
     (entry) => new Date(entry.date).toDateString() === new Date().toDateString(),
   );
+  
+  // Show chat automatically on component mount if there's a today's entry
+  useState(() => {
+    if (todayEntry && !showChat && !entriesLoading) {
+      setCurrentEntryId(todayEntry.id);
+      setShowChat(true);
+    }
+  });
 
   if (entriesLoading || questionLoading) {
     return (

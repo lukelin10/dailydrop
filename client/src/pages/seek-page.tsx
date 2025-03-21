@@ -65,26 +65,27 @@ function AnalysisCard({ analysis }: AnalysisCardProps) {
   const timeAgo = formatDistanceToNow(new Date(analysis.createdAt), { addSuffix: true });
   
   return (
-    <Link href={`/analysis/${analysis.id}`}>
-      <a className="block border rounded-lg p-6 hover:bg-accent/20 transition-colors cursor-pointer">
-        <div className="space-y-3">
-          <div className="flex justify-between items-start">
-            <div>
-              <h3 className="font-medium">Analysis from {timeAgo}</h3>
-              <div className="text-sm text-muted-foreground">
-                Based on {analysis.entryCount} journal entries
-              </div>
-            </div>
-            <div className="bg-primary/10 text-primary text-xs px-3 py-1 rounded-full">
-              Insight
+    <Link 
+      href={`/analysis/${analysis.id}`}
+      className="block border rounded-lg p-6 hover:bg-accent/20 transition-colors cursor-pointer"
+    >
+      <div className="space-y-3">
+        <div className="flex justify-between items-start">
+          <div>
+            <h3 className="font-medium">Analysis from {timeAgo}</h3>
+            <div className="text-sm text-muted-foreground">
+              Based on {analysis.entryCount} journal entries
             </div>
           </div>
-          
-          <p className="text-sm">
-            {summary}
-          </p>
+          <div className="bg-primary/10 text-primary text-xs px-3 py-1 rounded-full">
+            Insight
+          </div>
         </div>
-      </a>
+        
+        <p className="text-sm">
+          {summary}
+        </p>
+      </div>
     </Link>
   );
 }
