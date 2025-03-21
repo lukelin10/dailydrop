@@ -47,8 +47,9 @@ export default function HomePage() {
     },
   });
 
+  // Find entry matching today's questionId instead of just today's date
   const todayEntry = entries.find(
-    (entry) => new Date(entry.date).toDateString() === new Date().toDateString(),
+    (entry) => entry.questionId === dailyQuestion?.questionId
   );
   
   // On initial load, if there's an entry for today, immediately show the chat interface
