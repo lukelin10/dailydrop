@@ -47,13 +47,13 @@ export default function HomePage() {
     (entry) => new Date(entry.date).toDateString() === new Date().toDateString(),
   );
   
-  // Show chat automatically on component mount if there's a today's entry
-  useState(() => {
+  // Show chat automatically when entries load if there's an entry for today
+  useEffect(() => {
     if (todayEntry && !showChat && !entriesLoading) {
       setCurrentEntryId(todayEntry.id);
       setShowChat(true);
     }
-  });
+  }, [todayEntry, showChat, entriesLoading]);
 
   if (entriesLoading || questionLoading) {
     return (
