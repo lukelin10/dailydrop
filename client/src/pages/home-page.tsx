@@ -1,19 +1,15 @@
-import { useAuth } from "@/hooks/use-auth";
-import { Button } from "@/components/ui/button";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Entry } from "@shared/schema";
 import Editor from "@/components/editor";
 import ChatInterface from "@/components/chat-interface";
 import DropCounter from "@/components/drop-counter";
-import { Loader2, LogOut, Share2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useState } from "react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
-import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import MainNavigation from "@/components/main-navigation";
 
 export default function HomePage() {
-  const { user, logoutMutation } = useAuth();
-  const { toast } = useToast();
-  const [showFeed, setShowFeed] = useState(false);
   const [showChat, setShowChat] = useState(false);
   const [currentEntryId, setCurrentEntryId] = useState<number | null>(null);
 
@@ -45,167 +41,77 @@ export default function HomePage() {
     },
   });
 
-  const shareEntryMutation = useMutation({
-    mutationFn: async ({ id, isPublic }: { id: number; isPublic: boolean }) => {
-      const res = await apiRequest("PATCH", `/api/entries/${id}/share`, { isPublic });
-      return res.json();
-    },
-    onSuccess: (entry: Entry) => {
-      queryClient.invalidateQueries({ queryKey: ["/api/entries"] });
-      if (entry.isPublic && entry.shareId) {
-        const shareUrl = `${window.location.origin}/shared/${entry.shareId}`;
-        navigator.clipboard.writeText(shareUrl);
-        toast({
-          title: "Share link copied!",
-          description: "The link to your entry has been copied to your clipboard.",
-        });
-      }
-    },
-  });
-
   const todayEntry = entries.find(
     (entry) => new Date(entry.date).toDateString() === new Date().toDateString(),
   );
 
-  // Get unique entries by keeping only the latest answer for each question
-  const uniqueEntries = entries.reduce((acc, entry) => {
-    const existingEntry = acc.find((e) => e.question === entry.question);
-    if (!existingEntry || new Date(entry.date) > new Date(existingEntry.date)) {
-      const filtered = acc.filter((e) => e.question !== entry.question);
-      return [...filtered, entry];
-    }
-    return acc;
-  }, [] as Entry[]);
-
   if (entriesLoading || questionLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="flex flex-col min-h-screen">
+        <MainNavigation />
+        <div className="flex items-center justify-center flex-grow">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
       </div>
     );
   }
 
   const handleEndChat = () => {
     setShowChat(false);
-    setShowFeed(true);
     setCurrentEntryId(null);
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent">
-            Drop
-          </h1>
-          <div className="flex items-center gap-4">
+    <div className="flex flex-col min-h-screen bg-background">
+      <MainNavigation />
+      
+      <main className="container mx-auto px-4 py-8 flex-grow">
+        <div className="max-w-2xl mx-auto">
+          <div className="flex justify-between items-center mb-6">
+            <h1 className="text-2xl font-bold">Today's Drop</h1>
             <DropCounter />
-            <span className="text-sm text-muted-foreground">
-              User
-            </span>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => logoutMutation.mutate()}
-            >
-              <LogOut className="h-4 w-4" />
-            </Button>
           </div>
-        </div>
-      </header>
-
-      <main className="container mx-auto px-4 py-8">
-        {!showFeed && !showChat ? (
-          <div className="max-w-2xl mx-auto space-y-6">
-            <h2 className="text-xl font-semibold">Today's Question</h2>
-            {!todayEntry ? (
-              <div className="space-y-4">
-                <p className="text-lg">{dailyQuestion?.question}</p>
-                <Editor
-                  onSave={(answer) => createEntryMutation.mutate(answer)}
-                  loading={createEntryMutation.isPending}
-                />
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <p className="text-lg">{todayEntry.question}</p>
-                <div className="prose prose-sm max-w-none">
-                  {todayEntry.answer}
+          
+          {showChat && currentEntryId ? (
+            <div className="space-y-6">
+              <ChatInterface
+                entryId={currentEntryId}
+                question={entries.find(e => e.id === currentEntryId)?.question || ""}
+                answer={entries.find(e => e.id === currentEntryId)?.answer || ""}
+                onEndChat={handleEndChat}
+              />
+            </div>
+          ) : (
+            <div className="space-y-6">
+              {!todayEntry ? (
+                <div className="space-y-4 border rounded-lg p-6">
+                  <p className="text-lg font-medium">{dailyQuestion?.question}</p>
+                  <Editor
+                    onSave={(answer) => createEntryMutation.mutate(answer)}
+                    loading={createEntryMutation.isPending}
+                  />
                 </div>
-                {!showChat && (
+              ) : (
+                <div className="space-y-4 border rounded-lg p-6">
+                  <p className="text-lg font-medium">{todayEntry.question}</p>
+                  <div className="prose prose-sm max-w-none">
+                    {todayEntry.answer}
+                  </div>
                   <div className="flex gap-2">
-                    <Button onClick={() => {
-                      setCurrentEntryId(todayEntry.id);
-                      setShowChat(true);
-                    }}>
+                    <Button 
+                      onClick={() => {
+                        setCurrentEntryId(todayEntry.id);
+                        setShowChat(true);
+                      }}
+                    >
                       Chat with DropBot
                     </Button>
-                    <Button variant="outline" onClick={() => setShowFeed(true)}>
-                      View All Drops
-                    </Button>
                   </div>
-                )}
-              </div>
-            )}
-          </div>
-        ) : showChat && currentEntryId ? (
-          <div className="max-w-2xl mx-auto space-y-6">
-            <ChatInterface
-              entryId={currentEntryId}
-              question={entries.find(e => e.id === currentEntryId)?.question || ""}
-              answer={entries.find(e => e.id === currentEntryId)?.answer || ""}
-              onEndChat={handleEndChat}
-            />
-          </div>
-        ) : (
-          <div className="max-w-2xl mx-auto space-y-6">
-            <h2 className="text-xl font-semibold">Your Journey</h2>
-            <div className="space-y-6">
-              {uniqueEntries
-                .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
-                .map((entry) => (
-                  <div 
-                    key={entry.id} 
-                    className="border rounded-lg p-6 space-y-4 hover:bg-accent/50 cursor-pointer transition-colors"
-                    onClick={() => {
-                      setCurrentEntryId(entry.id);
-                      setShowChat(true);
-                      setShowFeed(false);
-                    }}
-                  >
-                    <div className="flex justify-between items-start">
-                      <p className="text-lg font-medium">{entry.question}</p>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-muted-foreground">
-                          {new Date(entry.date).toLocaleDateString()}
-                        </span>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={(e) => {
-                            e.stopPropagation(); 
-                            shareEntryMutation.mutate({
-                              id: entry.id,
-                              isPublic: !entry.isPublic,
-                            });
-                          }}
-                        >
-                          <Share2
-                            className={`h-4 w-4 ${
-                              entry.isPublic ? "text-primary" : ""
-                            }`}
-                          />
-                        </Button>
-                      </div>
-                    </div>
-                    <div className="prose prose-sm max-w-none">
-                      {entry.answer}
-                    </div>
-                  </div>
-                ))}
+                </div>
+              )}
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </main>
     </div>
   );
