@@ -134,30 +134,41 @@ export function registerRoutes(app: Express): Server {
       entryId,
     });
     if (!parsed.success) {
+      console.error('[express] Invalid chat message schema:', parsed.error);
       return res.status(400).json(parsed.error);
     }
 
+    console.log('[express] Creating user message:', parsed.data);
+    
     // Create user message
     const userMessage = await storage.createChatMessage({
       ...parsed.data,
       userId: req.user.id,
     });
+    
+    console.log('[express] User message created:', userMessage);
 
     // Get conversation history
     const messages = await storage.getChatMessages(entryId);
+    console.log('[express] Got conversation history, message count:', messages.length);
+    
     const conversationHistory = messages.map((msg): { role: "user" | "assistant"; content: string } => ({
       role: msg.isBot ? "assistant" : "user",
       content: msg.content
     }));
+    
+    console.log('[express] Mapped conversation history with roles');
 
     try {
       // Generate AI response
+      console.log('[express] Generating bot response with message:', parsed.data.content);
       const botResponse = await generateChatResponse(
         parsed.data.content,
         conversationHistory
       );
 
       if (botResponse) {
+        console.log('[express] Bot response generated successfully');
         // Create bot message
         const botMessage = await storage.createChatMessage({
           content: botResponse,
@@ -165,13 +176,15 @@ export function registerRoutes(app: Express): Server {
           isBot: true,
           userId: req.user.id,
         });
-
+        
+        console.log('[express] Bot message created:', botMessage);
         res.json([userMessage, botMessage]);
       } else {
+        console.warn('[express] Empty bot response received');
         res.json([userMessage]);
       }
     } catch (error) {
-      console.error("Error generating chat response:", error);
+      console.error("[express] Error generating chat response:", error);
       res.json([userMessage]);
     }
   });

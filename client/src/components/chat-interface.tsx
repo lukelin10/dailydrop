@@ -29,19 +29,20 @@ export default function ChatInterface({ entryId, question, answer, onEndChat }: 
 
   const sendMessageMutation = useMutation({
     mutationFn: async (message: string) => {
+      console.log(`Sending message to entry ${entryId}:`, message);
       const data = {
         content: message,
         isBot: false,
         entryId,
       };
-      const response = await apiRequest("POST", `/api/entries/${entryId}/chat`, data);
-      if (!response.ok) {
-        const error = await response.text();
-        throw new Error(`Failed to send message: ${error}`);
-      }
-      return response.json();
+      const response = await apiRequest<ChatMessage[]>(`/api/entries/${entryId}/chat`, {
+        method: "POST",
+        body: data
+      });
+      return response;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log(`Message sent successfully, response:`, data);
       queryClient.invalidateQueries({ queryKey: [`/api/entries/${entryId}/chat`] });
       form.reset();
     },
@@ -64,7 +65,12 @@ export default function ChatInterface({ entryId, question, answer, onEndChat }: 
   useEffect(() => {
     // Send the initial message (user's answer) when the chat first loads
     if (isInitializing && !messagesLoading && messages.length === 0) {
-      sendMessageMutation.mutate(answer);
+      console.log("Sending initial message to DropBot:", answer);
+      if (answer && answer.trim()) {
+        sendMessageMutation.mutate(answer);
+      } else {
+        console.error("Cannot send empty answer to DropBot");
+      }
       setIsInitializing(false);
     }
   }, [isInitializing, messagesLoading, messages.length, answer, sendMessageMutation]);
