@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import MainNavigation from "@/components/main-navigation";
 
 export default function AnalysisPage() {
   const { id } = useParams<{ id: string }>();
@@ -16,41 +17,47 @@ export default function AnalysisPage() {
   
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="flex flex-col min-h-screen">
+        <MainNavigation />
+        <div className="flex items-center justify-center flex-grow">
+          <Loader2 className="h-8 w-8 animate-spin" />
+        </div>
       </div>
     );
   }
   
   if (!analysis) {
     return (
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-3xl mx-auto space-y-6 text-center">
-          <h1 className="text-2xl font-bold">Analysis Not Found</h1>
-          <p>We couldn't find the analysis you're looking for.</p>
-          <Button asChild>
-            <Link href="/">Go Home</Link>
-          </Button>
+      <div className="flex flex-col min-h-screen">
+        <MainNavigation />
+        <div className="container mx-auto px-4 py-8 flex-grow">
+          <div className="max-w-3xl mx-auto space-y-6 text-center">
+            <h1 className="text-2xl font-bold">Analysis Not Found</h1>
+            <p>We couldn't find the analysis you're looking for.</p>
+            <Button asChild>
+              <Link href="/seek">Return to Seek</Link>
+            </Button>
+          </div>
         </div>
       </div>
     );
   }
   
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b">
-        <div className="container mx-auto px-4 py-4">
-          <Button asChild variant="ghost" size="sm">
-            <Link href="/">
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Back to Home
-            </Link>
-          </Button>
-        </div>
-      </header>
+    <div className="flex flex-col min-h-screen bg-background">
+      <MainNavigation />
       
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-4 py-8 flex-grow">
         <div className="max-w-3xl mx-auto space-y-6">
+          <div className="flex items-center mb-6">
+            <Button asChild variant="ghost" size="sm" className="mr-4">
+              <Link href="/seek">
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Back to Seek
+              </Link>
+            </Button>
+          </div>
+          
           <div className="space-y-2">
             <h1 className="text-2xl font-bold">
               An analysis of your last {analysis.entryCount} drops

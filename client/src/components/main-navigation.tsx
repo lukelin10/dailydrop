@@ -39,16 +39,18 @@ export default function MainNavigation() {
           </h1>
           <nav className="hidden md:flex space-x-1">
             {navItems.map((item) => (
-              <Link key={item.path} href={item.path}>
-                <a className={cn(
+              <Link 
+                key={item.path} 
+                href={item.path}
+                className={cn(
                   "px-4 py-2 rounded-md flex items-center text-sm font-medium transition-colors",
                   location === item.path 
                     ? "bg-primary/10 text-primary" 
                     : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-                )}>
-                  {item.icon}
-                  {item.name}
-                </a>
+                )}
+              >
+                {item.icon}
+                {item.name}
               </Link>
             ))}
           </nav>
@@ -57,16 +59,18 @@ export default function MainNavigation() {
         {/* Mobile Navigation */}
         <div className="md:hidden flex space-x-1">
           {navItems.map((item) => (
-            <Link key={item.path} href={item.path}>
-              <a className={cn(
+            <Link 
+              key={item.path} 
+              href={item.path}
+              className={cn(
                 "w-12 h-12 flex flex-col items-center justify-center rounded-md text-xs font-medium transition-colors",
                 location === item.path 
                   ? "bg-primary/10 text-primary" 
                   : "text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-              )}>
-                {item.icon}
-                <span className="mt-1">{item.name}</span>
-              </a>
+              )}
+            >
+              {item.icon}
+              <span className="mt-1">{item.name}</span>
             </Link>
           ))}
         </div>

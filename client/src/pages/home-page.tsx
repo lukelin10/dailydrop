@@ -30,8 +30,10 @@ export default function HomePage() {
         answer,
         date: new Date(),
       };
-      const response = await apiRequest("POST", "/api/entries", data);
-      const entry = await response.json();
+      const entry = await apiRequest<Entry>("/api/entries", {
+        method: "POST",
+        body: data
+      });
       return entry;
     },
     onSuccess: (entry) => {
