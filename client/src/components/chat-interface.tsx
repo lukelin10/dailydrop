@@ -33,16 +33,19 @@ export default function ChatInterface({ entryId, question, answer, onEndChat }: 
       const data = {
         content: message,
         isBot: false,
-        entryId,
       };
-      const response = await apiRequest<ChatMessage[]>(`/api/entries/${entryId}/chat`, {
-        method: "POST",
-        body: data
-      });
-      return response;
+      try {
+        return await apiRequest<ChatMessage[]>(`/api/entries/${entryId}/chat`, {
+          method: "POST",
+          body: data
+        });
+      } catch (error) {
+        console.error('Error sending message:', error);
+        throw error;
+      }
     },
     onSuccess: (data) => {
-      console.log(`Message sent successfully, response:`, data);
+      console.log(`Message sent successfully, got ${data?.length || 0} messages in response`);
       queryClient.invalidateQueries({ queryKey: [`/api/entries/${entryId}/chat`] });
       form.reset();
     },

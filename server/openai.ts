@@ -4,7 +4,7 @@ import { Entry, ChatMessage } from "../shared/schema.js";
 // the newest OpenAI model is "gpt-4o" which was released May 13, 2024. do not change this unless explicitly requested by the user
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
-async function generateChatResponse(userMessage: string, conversationHistory: Array<{ role: "user" | "assistant", content: string }>) {
+async function generateChatResponse(userMessage: string, conversationHistory: Array<{ role: "user" | "assistant", content: string }>): Promise<string> {
   try {
     const messageCount = conversationHistory.length + 1;
     const isLastMessage = messageCount >= 7;
@@ -26,7 +26,7 @@ async function generateChatResponse(userMessage: string, conversationHistory: Ar
       max_tokens: 150,
     });
 
-    return response.choices[0].message.content;
+    return response.choices[0].message.content || "I'm not sure how to respond to that. Can you tell me more?";
   } catch (error) {
     console.error("Error generating chat response:", error);
     throw new Error("Failed to generate chat response");
@@ -39,7 +39,7 @@ interface AnalysisEntry {
   chatMessages: ChatMessage[];
 }
 
-async function generateAnalysis(entries: AnalysisEntry[]) {
+async function generateAnalysis(entries: AnalysisEntry[]): Promise<string> {
   try {
     let promptContent = "You are a close friend and confidant, similar to that of a therapist or coach with deep understanding of this person. Analyze these chats from the user answering a personal introspective question and the subsequent chat with a close friend. Provide insights about what's coming up for this person and provide helpful advice or wisdom to them based on what they've talked about. Here are the chat transcripts:\n\n";
     
@@ -70,7 +70,7 @@ async function generateAnalysis(entries: AnalysisEntry[]) {
       max_tokens: 1000,
     });
 
-    return response.choices[0].message.content;
+    return response.choices[0].message.content || "No analysis could be generated";
   } catch (error) {
     console.error("Error generating analysis:", error);
     throw new Error("Failed to generate analysis");

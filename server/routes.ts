@@ -86,7 +86,7 @@ export function registerRoutes(app: Express): Server {
       return res.status(404).json({ message: "Entry not found" });
     }
 
-    const shareId = parsed.data.isPublic ? nanoid() : null;
+    const shareId = parsed.data.isPublic ? nanoid() : "";
     const updated = await storage.updateEntry(req.user.id, parseInt(req.params.id), {
       isPublic: parsed.data.isPublic,
       shareId,
