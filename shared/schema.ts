@@ -40,6 +40,7 @@ export const entries = pgTable("entries", {
   userId: integer("user_id").notNull(),
   question: text("question").notNull(),
   answer: text("answer").notNull(),
+  questionId: integer("question_id").notNull(), // ID of the question from Google Sheets
   date: date("date").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   isPublic: boolean("is_public").notNull().default(false),
@@ -103,6 +104,7 @@ export const insertEntrySchema = createInsertSchema(entries)
     question: true,
     answer: true,
     date: true,
+    questionId: true,
   })
   .extend({
     date: z.coerce.date(), // Converts string dates to Date objects

@@ -9,7 +9,7 @@ export function resetCurrentQuestionIndexForTesting(): void {
 }
 
 // Get current question without incrementing index
-export async function getCurrentQuestion(): Promise<string> {
+export async function getCurrentQuestion(): Promise<{ question: string, questionId: number }> {
   try {
     const auth = new GoogleAuth({
       credentials: {
@@ -38,7 +38,10 @@ export async function getCurrentQuestion(): Promise<string> {
       throw new Error(`Could not find question with ID ${currentQuestionIndex}`);
     }
 
-    return questionRow[1]; // Return questionString from column B
+    return { 
+      question: questionRow[1], 
+      questionId: currentQuestionIndex 
+    }; // Return question and its ID
   } catch (error) {
     console.error('Error fetching current question from Google Sheets:', error);
     throw new Error('Failed to fetch current question from Google Sheets');
