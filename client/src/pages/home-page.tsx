@@ -4,7 +4,7 @@ import Editor from "@/components/editor";
 import ChatInterface from "@/components/chat-interface";
 import DropCounter from "@/components/drop-counter";
 import { Loader2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import MainNavigation from "@/components/main-navigation";
