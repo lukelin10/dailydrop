@@ -1,6 +1,6 @@
 import { Link, useLocation } from "wouter";
 import { cn } from "@/lib/utils";
-import { Droplet, Archive, Search } from "lucide-react";
+import { Droplet, Archive, BrainCog } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
@@ -25,7 +25,7 @@ export default function MainNavigation() {
     {
       name: "Seek",
       path: "/seek",
-      icon: <Search className="h-4 w-4 mr-2" />,
+      icon: <BrainCog className="h-4 w-4 mr-2" />,
       description: "Analyses"
     }
   ];
