@@ -73,9 +73,9 @@ export interface IStorage {
   sessionStore: session.Store;
   
   /**
-   * Get the daily journaling question
+   * Get the daily journaling question with its ID
    */
-  getDailyQuestion(date: Date): Promise<string>;
+  getDailyQuestion(date: Date): Promise<{ question: string, questionId: number }>;
   
   /**
    * Create a new chat message for an entry
@@ -205,7 +205,7 @@ export class DatabaseStorage implements IStorage {
     return entry;
   }
 
-  async getDailyQuestion(date: Date): Promise<string> {
+  async getDailyQuestion(date: Date): Promise<{ question: string, questionId: number }> {
     try {
       return await getNextQuestion();
     } catch (error) {
@@ -224,7 +224,11 @@ export class DatabaseStorage implements IStorage {
         "What's something you'd like to improve?"
       ];
       const dayOfYear = Math.floor(date.getTime() / (1000 * 60 * 60 * 24));
-      return FALLBACK_QUESTIONS[dayOfYear % FALLBACK_QUESTIONS.length];
+      const questionIndex = dayOfYear % FALLBACK_QUESTIONS.length;
+      return {
+        question: FALLBACK_QUESTIONS[questionIndex],
+        questionId: questionIndex + 1 // Using index + 1 as a fallback ID
+      };
     }
   }
 

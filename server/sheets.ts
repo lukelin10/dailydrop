@@ -56,7 +56,7 @@ export function setQuestionIndex(index: number): void {
   currentQuestionIndex = index;
 }
 
-export async function getNextQuestion(): Promise<string> {
+export async function getNextQuestion(): Promise<{ question: string, questionId: number }> {
   try {
     const auth = new GoogleAuth({
       credentials: {
@@ -88,14 +88,21 @@ export async function getNextQuestion(): Promise<string> {
       if (!firstRow) {
         throw new Error('Could not find question with ID 1');
       }
-      return firstRow[1]; // Return questionString from column B
+      return {
+        question: firstRow[1],
+        questionId: 1
+      }; // Return first question and its ID
     }
 
     // Get current question and increment index for next time
     const questionString = questionRow[1];
+    const currentId = currentQuestionIndex;
     currentQuestionIndex++;
 
-    return questionString;
+    return {
+      question: questionString,
+      questionId: currentId
+    };
   } catch (error) {
     console.error('Error fetching question from Google Sheets:', error);
     throw new Error('Failed to fetch question from Google Sheets');
