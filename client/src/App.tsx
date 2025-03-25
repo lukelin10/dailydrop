@@ -1,3 +1,9 @@
+/**
+ * Application Root Component
+ * 
+ * This file defines the top-level structure of the client-side application,
+ * including routing, authentication, and global state providers.
+ */
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -12,6 +18,21 @@ import AnalysisPage from "@/pages/analysis-page";
 import { AuthProvider } from "./hooks/use-auth";
 import { ProtectedRoute } from "./lib/protected-route";
 
+/**
+ * Application Routing Component
+ * 
+ * Defines all application routes and their corresponding components.
+ * Uses ProtectedRoute for routes that require authentication.
+ * 
+ * Routes:
+ * - / - Home page, shows today's question (protected)
+ * - /feed - Journal entries feed (protected)
+ * - /seek - Analysis overview (protected)
+ * - /analysis/:id - View specific analysis (protected)
+ * - /auth - Authentication page (public)
+ * - /shared/:shareId - Shared entry view (public)
+ * - * - 404 Not Found page (public)
+ */
 function Router() {
   return (
     <Switch>
@@ -26,6 +47,15 @@ function Router() {
   );
 }
 
+/**
+ * Main Application Component
+ * 
+ * Sets up the application with necessary providers:
+ * 1. QueryClientProvider - For React Query data fetching
+ * 2. AuthProvider - For user authentication
+ * 
+ * Also includes global components like Toaster for notifications.
+ */
 function App() {
   return (
     <QueryClientProvider client={queryClient}>

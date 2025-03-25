@@ -1,3 +1,16 @@
+/**
+ * Home Page Component
+ * 
+ * This is the main page of the application where users:
+ * 1. See the daily question fetched from Google Sheets
+ * 2. Enter their journal entry ("drop") for the day
+ * 3. Interact with the AI assistant through chat
+ * 
+ * The page handles three main states:
+ * - Loading: While fetching question and existing entries
+ * - Question Entry: Shows the daily question and answer form
+ * - Chat Interface: For conversation with the AI about the entry
+ */
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { Entry } from "@shared/schema";
 import Editor from "@/components/editor";
