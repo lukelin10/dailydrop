@@ -26,15 +26,9 @@ name = "Project"
 mode = "parallel"
 author = "agent"
 
-[workflows.workflow.metadata]
-agentRequireRestartOnSave = false
-
 [[workflows.workflow.tasks]]
-task = "packager.installForAll"
-
-[[workflows.workflow.tasks]]
-task = "shell.exec"
-args = "npm test sheets.test.ts"
+task = "workflow.run"
+args = "Start application"
 
 [[workflows.workflow]]
 name = "Start application"
