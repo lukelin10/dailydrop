@@ -35,8 +35,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginData) => {
-      const res = await apiRequest("POST", "/api/login", credentials);
-      return await res.json();
+      return await apiRequest<SelectUser>("/api/login", {
+        method: "POST",
+        body: credentials
+      });
     },
     onSuccess: (user: SelectUser) => {
       queryClient.setQueryData(["/api/user"], user);
@@ -53,11 +55,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const googleLoginMutation = useMutation({
     mutationFn: async () => {
       const googleUser = await signInWithGoogle();
-      const res = await apiRequest("POST", "/api/google-login", {
-        uid: googleUser.uid,
-        email: googleUser.email,
+      return await apiRequest<SelectUser>("/api/google-login", {
+        method: "POST",
+        body: {
+          uid: googleUser.uid,
+          email: googleUser.email,
+        }
       });
-      return await res.json();
     },
     onSuccess: (user: SelectUser) => {
       queryClient.setQueryData(["/api/user"], user);
@@ -73,8 +77,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const registerMutation = useMutation({
     mutationFn: async (credentials: InsertUser) => {
-      const res = await apiRequest("POST", "/api/register", credentials);
-      return await res.json();
+      return await apiRequest<SelectUser>("/api/register", {
+        method: "POST",
+        body: credentials
+      });
     },
     onSuccess: (user: SelectUser) => {
       queryClient.setQueryData(["/api/user"], user);
@@ -90,7 +96,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
-      await apiRequest("POST", "/api/logout");
+      await apiRequest("/api/logout", {
+        method: "POST"
+      });
     },
     onSuccess: () => {
       queryClient.setQueryData(["/api/user"], null);
