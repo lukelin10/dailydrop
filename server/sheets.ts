@@ -38,10 +38,11 @@ export async function getCurrentQuestion(): Promise<{ question: string, question
       throw new Error(`Could not find question with ID ${currentQuestionIndex}`);
     }
 
+    // Return the question with its actual ID from the sheet (column A)
     return { 
       question: questionRow[1], 
-      questionId: currentQuestionIndex 
-    }; // Return question and its ID
+      questionId: parseInt(questionRow[0]) 
+    }; // Return question and its ID from sheet
   } catch (error) {
     console.error('Error fetching current question from Google Sheets:', error);
     throw new Error('Failed to fetch current question from Google Sheets');
@@ -90,18 +91,18 @@ export async function getNextQuestion(): Promise<{ question: string, questionId:
       }
       return {
         question: firstRow[1],
-        questionId: 1
-      }; // Return first question and its ID
+        questionId: parseInt(firstRow[0])
+      }; // Return first question and its ID from sheet
     }
 
     // Get current question and increment index for next time
     const questionString = questionRow[1];
-    const currentId = currentQuestionIndex;
-    currentQuestionIndex++;
+    const questionId = parseInt(questionRow[0]); // Use the actual question ID from the sheet
+    currentQuestionIndex++; // Still increment our index for the next query
 
     return {
       question: questionString,
-      questionId: currentId
+      questionId: questionId // Return the actual question ID from the sheet
     };
   } catch (error) {
     console.error('Error fetching question from Google Sheets:', error);

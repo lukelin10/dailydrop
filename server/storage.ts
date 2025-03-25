@@ -207,8 +207,12 @@ export class DatabaseStorage implements IStorage {
 
   async getDailyQuestion(date: Date): Promise<{ question: string, questionId: number }> {
     try {
+      // Try to get the question from Google Sheets
       return await getNextQuestion();
     } catch (error) {
+      // If Google Sheets fails, use a fallback mechanism
+      console.error('Failed to get question from Google Sheets, using fallback:', error);
+      
       const FALLBACK_QUESTIONS = [
         "What small moment from today made you smile?",
         "What's something you feel is seeking you?",
@@ -223,8 +227,13 @@ export class DatabaseStorage implements IStorage {
         "What made today unique?",
         "What's something you'd like to improve?"
       ];
-      const dayOfYear = Math.floor(date.getTime() / (1000 * 60 * 60 * 24));
-      const questionIndex = dayOfYear % FALLBACK_QUESTIONS.length;
+      
+      // Calculate the day of year to determine which question to show
+      // This will increment by 1 each day
+      const startDate = new Date('2025-01-01'); // Using Jan 1, 2025 as reference
+      const daysDiff = Math.floor((date.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
+      const questionIndex = Math.max(0, daysDiff) % FALLBACK_QUESTIONS.length;
+      
       return {
         question: FALLBACK_QUESTIONS[questionIndex],
         questionId: questionIndex + 1 // Using index + 1 as a fallback ID
