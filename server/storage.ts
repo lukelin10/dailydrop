@@ -205,14 +205,35 @@ export class DatabaseStorage implements IStorage {
     return entry;
   }
 
+  /**
+   * Get the daily question for journaling
+   * 
+   * This method has a primary and fallback mechanism:
+   * 
+   * 1. PRIMARY: Retrieve the next question from Google Sheets
+   *    - Calls getNextQuestion() which fetches based on the current index
+   *    - The index increments by 1 each day to provide a new question
+   *    - Each question has a unique ID from column A of the spreadsheet
+   * 
+   * 2. FALLBACK: If Google Sheets is unavailable, use local questions
+   *    - Maintains a list of backup questions in case of API failure
+   *    - Selects questions based on days since a reference date
+   *    - Ensures users still get a sequence of changing questions
+   *    - Generates an appropriate questionId to maintain data consistency
+   * 
+   * @param date - The current date (used for fallback calculation)
+   * @returns Object containing the question text and its ID
+   */
   async getDailyQuestion(date: Date): Promise<{ question: string, questionId: number }> {
     try {
-      // Try to get the question from Google Sheets
+      // PRIMARY STRATEGY: Try to get the question from Google Sheets
+      // This will increment the question index each day
       return await getNextQuestion();
     } catch (error) {
-      // If Google Sheets fails, use a fallback mechanism
+      // FALLBACK STRATEGY: If Google Sheets fails, use a local mechanism
       console.error('Failed to get question from Google Sheets, using fallback:', error);
       
+      // Array of fallback questions that can be used when Google Sheets is unavailable
       const FALLBACK_QUESTIONS = [
         "What small moment from today made you smile?",
         "What's something you feel is seeking you?",
@@ -228,8 +249,8 @@ export class DatabaseStorage implements IStorage {
         "What's something you'd like to improve?"
       ];
       
-      // Calculate the day of year to determine which question to show
-      // This will increment by 1 each day
+      // Calculate which question to show based on the current date
+      // This ensures the question changes each day, even in fallback mode
       const startDate = new Date('2025-01-01'); // Using Jan 1, 2025 as reference
       const daysDiff = Math.floor((date.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24));
       const questionIndex = Math.max(0, daysDiff) % FALLBACK_QUESTIONS.length;
