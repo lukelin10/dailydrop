@@ -1,3 +1,20 @@
+/**
+ * API Routes Module
+ * 
+ * This module defines all API endpoints for the application, including:
+ * - Authentication routes (through setupAuth)
+ * - Journal entry management
+ * - Daily question retrieval
+ * - Chat functionality
+ * - Analysis generation
+ * - Public sharing functionality
+ * 
+ * Each endpoint follows a consistent pattern:
+ * 1. Authentication verification (for protected routes)
+ * 2. Input validation using Zod schemas
+ * 3. Business logic execution using storage interface
+ * 4. Response formatting and error handling
+ */
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { setupAuth } from "./auth.js";
@@ -8,6 +25,12 @@ import { generateChatResponse, generateAnalysis } from "./openai.js";
 import { getCurrentQuestion, setQuestionIndex } from "./sheets.js";
 import { z } from "zod";
 
+/**
+ * Register all API routes with the Express application
+ * 
+ * @param app - Express application instance
+ * @returns HTTP server instance
+ */
 export function registerRoutes(app: Express): Server {
   setupAuth(app);
 
@@ -29,6 +52,17 @@ export function registerRoutes(app: Express): Server {
     res.status(201).json(entry);
   });
 
+  /**
+   * Get Daily Question
+   * 
+   * GET /api/question
+   * 
+   * Retrieves the daily journaling question for the current day.
+   * Each day, a new question is presented based on the incremented index.
+   * Requires authentication.
+   * 
+   * @returns Question text and ID
+   */
   app.get("/api/question", async (req, res) => {
     if (!req.isAuthenticated()) return res.sendStatus(401);
     try {
@@ -41,7 +75,17 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // New endpoint to get current question without incrementing
+  /**
+   * Get Current Question Without Incrementing
+   * 
+   * GET /api/question/current
+   * 
+   * Returns the current question without incrementing the index.
+   * Used for debugging or administrative purposes to check the current 
+   * question without affecting the sequence.
+   * 
+   * @returns Current question with flag indicating it's the current index
+   */
   app.get("/api/question/current", async (req, res) => {
     try {
       const question = await getCurrentQuestion();
@@ -52,7 +96,17 @@ export function registerRoutes(app: Express): Server {
     }
   });
 
-  // New endpoint to reset question index
+  /**
+   * Reset Question Index
+   * 
+   * POST /api/question/reset
+   * 
+   * Allows administrators to manually set the question index to a specific value.
+   * This can be used to restart the sequence or jump to a specific question.
+   * 
+   * @param index - The question index to set (must be > 0)
+   * @returns Success message with the new current index and question
+   */
   app.post("/api/question/reset", async (req, res) => {
     const schema = z.object({
       index: z.number().min(1),
