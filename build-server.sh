@@ -68,6 +68,11 @@ sed -i '/\/\// !{/\.js['"'"'"]/ !s|from \(['"'"']\)\([^'"'"']*\)\1|from \1\2.js\
 echo "Setting up entry point..."
 cp dist/server/server/index.js dist/server/index.js
 
+# Update import paths in the entry point to correctly reference files in the server directory
+echo "Updating import paths in entry point..."
+sed -i 's|import { registerRoutes } from "./routes.js";|import { registerRoutes } from "./server/routes.js";|g' dist/server/index.js
+sed -i 's|import { setupVite, serveStatic, log } from "./vite.js";|import { setupVite, serveStatic, log } from "./server/vite.js";|g' dist/server/index.js
+
 # Step 7: Final verification
 echo "Performing final verification..."
 find dist/server -type f -name "*.js" | while read file; do
