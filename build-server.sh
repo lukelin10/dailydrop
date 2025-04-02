@@ -7,6 +7,10 @@ echo "Starting server build process..."
 mkdir -p dist/shared
 mkdir -p dist/server
 
+# Step 1.5: Build the client application first
+echo "Building client application with Vite..."
+npm run build
+
 # Step 2: Compile TypeScript code
 echo "Compiling server TypeScript code..."
 npx tsc -p server/tsconfig.json
@@ -90,5 +94,17 @@ find dist/server -type f -name "*.js" | while read file; do
     exit 1
   fi
 done
+
+# Check if client build directory exists
+if [ ! -d "dist/public" ]; then
+  echo "ERROR: Client build directory not found! The server will not be able to serve static files."
+  exit 1
+fi
+
+# Check for index.html in client build
+if [ ! -f "dist/public/index.html" ]; then
+  echo "ERROR: Client index.html not found in build directory!"
+  exit 1
+fi
 
 echo "Server build completed successfully"
