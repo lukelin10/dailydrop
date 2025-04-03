@@ -103,7 +103,7 @@ export const getQueryFn: <TData>(options: {
       return await res.json();
     } else {
       console.warn(`Query response is not JSON: ${contentType}`);
-      return {} as T;
+      return {} as TData;
     }
   };
 
