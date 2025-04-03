@@ -10,7 +10,38 @@ import { setupVite, serveStatic, log } from "./server/vite.js";
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { logProductionEnvironment, createSymlinkIfNeeded } from './production-debug.js';
+
+// Dynamic import of production-debug.js - try multiple possible locations
+let logProductionEnvironment, createSymlinkIfNeeded;
+
+try {
+  // First try the same directory
+  const { logProductionEnvironment: log1, createSymlinkIfNeeded: create1 } = await import('./production-debug.js');
+  logProductionEnvironment = log1;
+  createSymlinkIfNeeded = create1;
+  console.log('Successfully imported production-debug.js from server directory');
+} catch (error) {
+  console.log('Failed to import production-debug.js from server directory, trying root directory...');
+  try {
+    // Then try the root directory
+    const { logProductionEnvironment: log2, createSymlinkIfNeeded: create2 } = await import('../production-debug.js');
+    logProductionEnvironment = log2;
+    createSymlinkIfNeeded = create2;
+    console.log('Successfully imported production-debug.js from root directory');
+  } catch (secondError) {
+    console.error('Failed to import production-debug.js from all locations:', secondError.message);
+    // Provide fallback implementations if the module can't be loaded
+    logProductionEnvironment = () => {
+      console.log('Using fallback production environment logger');
+      console.log('NODE_ENV:', process.env.NODE_ENV);
+      console.log('Current working directory:', process.cwd());
+      console.log('__dirname:', __dirname);
+    };
+    createSymlinkIfNeeded = () => {
+      console.log('Using fallback symlink creator (does nothing)');
+    };
+  }
+}
 
 // Log environment information for debugging in production
 console.log('Starting server with enhanced debugging...');

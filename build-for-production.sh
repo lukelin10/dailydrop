@@ -69,7 +69,9 @@ sed -i '/\/\// !{/\.js['"'"'"]/ !s|from \(['"'"']\)\([^'"'"']*\)\1|from \1\2.js\
 
 # Step 7: Add debugging utilities for production
 echo "Adding production debugging utilities..."
+# Copy to both locations to ensure it's found regardless of where the server is started from
 cp production-debug.js dist/production-debug.js
+cp production-debug.js dist/server/production-debug.js
 
 # Step 8: Set up enhanced entry point for production
 echo "Setting up enhanced entry point..."
