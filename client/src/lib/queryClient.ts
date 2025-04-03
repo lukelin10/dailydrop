@@ -18,9 +18,9 @@ export async function apiRequest<T>(
   // Ensure the URL is relative to the current domain in production
   // This prevents issues with absolute paths in deployed environments
   const apiUrl = url.startsWith('http') ? url : url.startsWith('/') ? url : `/${url}`;
-  
+
   console.log("Making API request to:", apiUrl);
-  
+
   const res = await fetch(apiUrl, {
     method: options.method,
     headers: options.body ? { "Content-Type": "application/json" } : {},
@@ -30,17 +30,17 @@ export async function apiRequest<T>(
 
   // Log response status to help with debugging
   console.log(`API response status: ${res.status} ${res.statusText}`);
-  
+
   await throwIfResNotOk(res);
-  
+
   // For endpoints that return empty responses or non-JSON responses
   const expectJson = options.expectJson !== false;
-  
+
   if (!expectJson) {
     // Return an empty object if we don't expect JSON
     return {} as T;
   }
-  
+
   // Check if there's actually content to parse
   const contentType = res.headers.get('content-type');
   if (contentType && contentType.includes('application/json')) {
@@ -56,16 +56,16 @@ export function getQueryFn<TData>(options: {
   on401: UnauthorizedBehavior;
 }): QueryFunction<TData> {
   const { on401 } = options;
-  
+
   return async ({ queryKey }) => {
     // Handle query keys that include an ID parameter
     let url: string;
-    
+
     // If the queryKey is an array with more than one element
     if (Array.isArray(queryKey) && queryKey.length > 1) {
       const baseUrl = queryKey[0] as string;
       const id = queryKey[1];
-      
+
       if (id !== null && id !== undefined) {
         // Ensure we have a clean URL without double slashes
         url = baseUrl.endsWith('/') 
@@ -82,13 +82,13 @@ export function getQueryFn<TData>(options: {
     // Ensure the URL is relative to the current domain in production
     // This prevents issues with absolute paths in deployed environments
     const apiUrl = url.startsWith('http') ? url : url.startsWith('/') ? url : `/${url}`;
-    
+
     console.log("API Request URL:", apiUrl);
 
     const res = await fetch(apiUrl, {
       credentials: "include",
     });
-    
+
     // Log response status to help with debugging
     console.log(`Query response status: ${res.status} ${res.statusText}`);
 
@@ -97,13 +97,15 @@ export function getQueryFn<TData>(options: {
     }
 
     await throwIfResNotOk(res);
-    
+
     // Check if there's actually content to parse
     const contentType = res.headers.get('content-type');
     if (contentType && contentType.includes('application/json')) {
-      return await res.json();
+      const data = await res.json();
+      return data as TData;
     } else {
       console.warn(`Query response is not JSON: ${contentType}`);
+      // Return empty object of type T for non-JSON responses
       return {} as TData;
     }
   };
