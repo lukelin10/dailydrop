@@ -31,9 +31,9 @@ function buildApp() {
   console.log('Building for production...');
   
   try {
-    // Build client (frontend)
-    console.log('Building client...');
-    execSync('npm run build', { stdio: 'inherit' });
+    // Build client (frontend) with non-minified approach to prevent "i.find is not a function" error
+    console.log('Building client with non-minified build to prevent array method errors...');
+    execSync('node build-no-minify.js', { stdio: 'inherit' });
     
     // Directly run server in development mode with NODE_ENV set to production
     // This approach avoids the need to compile TypeScript
