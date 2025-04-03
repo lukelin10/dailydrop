@@ -61,9 +61,31 @@ export function getQueryFn<TData>(options: {
     // Handle query keys that include an ID parameter
     let url: string;
 
+    // Add extra defensive checks for array operations - this is critical for production builds
+    if (!queryKey) {
+      throw new Error("Query key is missing");
+    }
+
+    // Defend against non-array queryKey (should never happen, but protect anyway)
+    if (!Array.isArray(queryKey)) {
+      console.error("Expected queryKey to be an array but got:", typeof queryKey);
+      throw new Error("Invalid query key format");
+    }
+
+    // Make sure we have at least one element in the array
+    if (queryKey.length === 0) {
+      throw new Error("Query key array is empty");
+    }
+
     // If the queryKey is an array with more than one element
-    if (Array.isArray(queryKey) && queryKey.length > 1) {
-      const baseUrl = queryKey[0] as string;
+    if (queryKey.length > 1) {
+      // Ensure first element is a string and exists
+      const baseUrl = typeof queryKey[0] === 'string' ? queryKey[0] : '';
+      if (!baseUrl) {
+        console.error("Invalid baseUrl in queryKey:", queryKey);
+        throw new Error("Invalid base URL in query key");
+      }
+
       const id = queryKey[1];
 
       if (id !== null && id !== undefined) {
@@ -76,7 +98,12 @@ export function getQueryFn<TData>(options: {
       }
     } else {
       // Simple case - just a string URL
-      url = queryKey[0] as string;
+      const firstKey = queryKey[0];
+      if (typeof firstKey !== 'string') {
+        console.error("Expected first queryKey element to be string but got:", typeof firstKey);
+        throw new Error("Invalid query key format: first element must be a string URL");
+      }
+      url = firstKey;
     }
 
     // Ensure the URL is relative to the current domain in production

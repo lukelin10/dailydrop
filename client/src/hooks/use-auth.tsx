@@ -54,25 +54,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const googleLoginMutation = useMutation({
     mutationFn: async () => {
-      // Get user from Google sign-in
-      const googleUser = await signInWithGoogle();
-      
-      // Send credentials to backend
-      return await apiRequest<SelectUser>("/api/google-login", {
-        method: "POST",
-        body: {
-          uid: googleUser.uid,
-          email: googleUser.email || "unknown@example.com",
+      try {
+        // Get user from Google sign-in with enhanced error handling
+        const googleUser = await signInWithGoogle();
+        
+        // Validate that we have a proper user object before proceeding
+        if (!googleUser || typeof googleUser !== 'object') {
+          throw new Error("Invalid user data returned from Google authentication");
         }
-      });
+        
+        // Extract uid and email with explicit null/undefined checks
+        const uid = googleUser.uid;
+        const email = googleUser.email;
+        
+        if (!uid || typeof uid !== 'string') {
+          throw new Error("User ID missing from Google authentication");
+        }
+        
+        // Send credentials to backend with validated data
+        return await apiRequest<SelectUser>("/api/google-login", {
+          method: "POST",
+          body: {
+            uid: uid,
+            email: email || "unknown@example.com",
+          }
+        });
+      } catch (error) {
+        console.error("Google login flow error:", error);
+        // Re-throw with a more specific message
+        throw error instanceof Error 
+          ? error 
+          : new Error("Failed to complete Google authentication");
+      }
     },
     onSuccess: (user: SelectUser) => {
-      queryClient.setQueryData(["/api/user"], user);
+      // Only update query data if user is valid
+      if (user && typeof user === 'object') {
+        queryClient.setQueryData(["/api/user"], user);
+      }
     },
     onError: (error: Error) => {
+      console.error("Google login mutation error:", error);
       toast({
         title: "Google login failed",
-        description: error.message,
+        description: error.message || "Authentication error",
         variant: "destructive",
       });
     },
