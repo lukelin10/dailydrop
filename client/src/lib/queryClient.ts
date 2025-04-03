@@ -52,11 +52,12 @@ export async function apiRequest<T>(
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
-export const getQueryFn: <TData>(options: {
+export function getQueryFn<TData>(options: {
   on401: UnauthorizedBehavior;
-}) => QueryFunction<TData> =
-  ({ on401: unauthorizedBehavior }) =>
-  async ({ queryKey }) => {
+}): QueryFunction<TData> {
+  const { on401 } = options;
+  
+  return async ({ queryKey }) => {
     // Handle query keys that include an ID parameter
     let url: string;
     
@@ -91,7 +92,7 @@ export const getQueryFn: <TData>(options: {
     // Log response status to help with debugging
     console.log(`Query response status: ${res.status} ${res.statusText}`);
 
-    if (unauthorizedBehavior === "returnNull" && res.status === 401) {
+    if (on401 === "returnNull" && res.status === 401) {
       return null;
     }
 
@@ -106,6 +107,7 @@ export const getQueryFn: <TData>(options: {
       return {} as TData;
     }
   };
+}
 
 export const queryClient = new QueryClient({
   defaultOptions: {
