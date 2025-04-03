@@ -47,54 +47,76 @@ cat > dist/check-environment.js << 'EOF'
 /**
  * Production Environment Check
  * 
- * This file is a standalone script to check the production environment
- * without requiring the full server to start.
+ * This script checks the runtime environment to ensure everything is set up correctly
+ * before starting the production server.
  */
 
-console.log('=== PRODUCTION ENVIRONMENT CHECK ===');
-console.log('Current Working Directory:', process.cwd());
-console.log('NODE_ENV:', process.env.NODE_ENV);
-console.log('PORT:', process.env.PORT);
+import fs from 'fs';
+import path from 'path';
+import os from 'os';
+import { fileURLToPath } from 'url';
 
-const fs = require('fs');
-const path = require('path');
+// Get directory paths
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-// Check for critical files
-const criticalFiles = [
-  'server/index.js',
-  'public/index.html',
-  'production-debug.js',
-  'production-startup-check.js'
-];
+console.log("=== PRODUCTION ENVIRONMENT CHECK ===");
+console.log(`Timestamp: ${new Date().toISOString()}`);
+console.log(`Node.js version: ${process.version}`);
+console.log(`NODE_ENV: ${process.env.NODE_ENV}`);
+console.log(`Current directory: ${process.cwd()}`);
+console.log(`Script directory: ${__dirname}`);
+console.log(`Platform: ${os.platform()} ${os.release()}`);
 
-console.log('\nChecking for critical files:');
-criticalFiles.forEach(file => {
-  const fullPath = path.join(process.cwd(), file);
-  if (fs.existsSync(fullPath)) {
-    console.log(`✓ ${file} exists`);
-  } else {
-    console.log(`✗ ${file} is missing`);
+// Check if client directory exists
+const clientDir = path.resolve(__dirname, 'client');
+console.log(`Client directory exists: ${fs.existsSync(clientDir)}`);
+
+// Check if server directory exists
+const serverDir = path.resolve(__dirname, 'server');
+console.log(`Server directory exists: ${fs.existsSync(serverDir)}`);
+
+// Check if index.html exists
+const indexHtmlPath = path.resolve(__dirname, 'client', 'index.html');
+console.log(`Client index.html exists: ${fs.existsSync(indexHtmlPath)}`);
+
+// Check if server/index.js exists
+const serverIndexPath = path.resolve(__dirname, 'server', 'index.js');
+console.log(`Server index.js exists: ${fs.existsSync(serverIndexPath)}`);
+
+// Check if server/vite.js exists
+const viteJsPath = path.resolve(__dirname, 'server', 'server', 'vite.js');
+console.log(`Server vite.js exists: ${fs.existsSync(viteJsPath)}`);
+
+// Check available directories
+console.log("\nDirectory listing of current directory:");
+try {
+  const files = fs.readdirSync(__dirname);
+  files.forEach(file => {
+    const filePath = path.join(__dirname, file);
+    const stats = fs.statSync(filePath);
+    console.log(`${file} (${stats.isDirectory() ? 'directory' : 'file'})`);
+  });
+} catch (error) {
+  console.error("Error listing directory:", error);
+}
+
+// Check server directory
+if (fs.existsSync(serverDir)) {
+  console.log("\nDirectory listing of server directory:");
+  try {
+    const files = fs.readdirSync(serverDir);
+    files.forEach(file => {
+      const filePath = path.join(serverDir, file);
+      const stats = fs.statSync(filePath);
+      console.log(`${file} (${stats.isDirectory() ? 'directory' : 'file'})`);
+    });
+  } catch (error) {
+    console.error("Error listing server directory:", error);
   }
-});
+}
 
-// Look for static files
-console.log('\nLooking for static files:');
-['dist/public', 'public', 'server/public'].forEach(dir => {
-  const fullPath = path.join(process.cwd(), dir);
-  if (fs.existsSync(fullPath)) {
-    console.log(`Directory ${dir} exists`);
-    try {
-      const files = fs.readdirSync(fullPath);
-      console.log(`  Contents: ${files.join(', ')}`);
-    } catch (err) {
-      console.log(`  Error reading directory: ${err.message}`);
-    }
-  } else {
-    console.log(`Directory ${dir} does not exist`);
-  }
-});
-
-console.log('\nEnvironment check complete');
+console.log("\n=== ENVIRONMENT CHECK COMPLETE ===");
 EOF
 
 # Step 9: Final verification

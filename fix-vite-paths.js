@@ -54,7 +54,7 @@ async function fixPaths() {
           try {
             // Map /src/ requests directly to client/src/
             // Remove the leading /src/ and replace with client/src/
-            const relativePath = req.originalUrl.replace(/^\/src\//, '');
+            const relativePath = req.originalUrl.replace(/^\\/src\\//, '');
             const filePath = path.resolve(__dirname, '..', '..', '..', 'client', 'src', relativePath);
             
             if (fs.existsSync(filePath)) {
@@ -62,10 +62,10 @@ async function fixPaths() {
               next();
               return;
             } else {
-              console.log(`[Path Resolution] File not found: ${filePath}`);
+              console.log('[Path Resolution] File not found:', filePath);
             }
           } catch (e) {
-            console.error('[Path Resolution Error]', e);
+            console.error("[Path Resolution Error]", e);
             // Ignore and continue with normal handling
           }
         }
