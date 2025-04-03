@@ -64,16 +64,30 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         }
         
         console.log("Sending credentials to backend...");
-        const response = await apiRequest<SelectUser>("/api/google-login", {
-          method: "POST",
-          body: {
-            uid: googleUser.uid,
-            email: googleUser.email || "unknown@example.com", // Fallback if email is null/undefined
-          }
-        });
         
-        console.log("Backend authentication successful");
-        return response;
+        try {
+          // Use a specific catch for the API request to handle HTML responses
+          const response = await apiRequest<SelectUser>("/api/google-login", {
+            method: "POST",
+            body: {
+              uid: googleUser.uid,
+              email: googleUser.email || "unknown@example.com", // Fallback if email is null/undefined
+            }
+          });
+          
+          console.log("Backend authentication successful");
+          return response;
+        } catch (apiErr: any) {
+          console.error("API request failed:", apiErr);
+          
+          // If the error contains HTML, it's likely a 502 or other infrastructure error
+          if (apiErr.message && apiErr.message.includes("<!DOCTYPE")) {
+            throw new Error("Login service is temporarily unavailable. Please try again later.");
+          }
+          
+          // Re-throw other errors
+          throw apiErr;
+        }
       } catch (err) {
         console.error("Google login flow error:", err);
         // Re-throw to trigger onError
@@ -115,14 +129,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logoutMutation = useMutation({
     mutationFn: async () => {
+      // Specify expectJson: false since the logout endpoint returns status 200 without JSON
       await apiRequest("/api/logout", {
-        method: "POST"
+        method: "POST",
+        expectJson: false
       });
     },
     onSuccess: () => {
+      console.log("Logout successful, clearing user data");
       queryClient.setQueryData(["/api/user"], null);
     },
     onError: (error: Error) => {
+      console.error("Logout failed:", error);
       toast({
         title: "Logout failed",
         description: error.message,

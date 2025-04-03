@@ -12,7 +12,8 @@ export async function apiRequest<T>(
   options: {
     method: string;
     body?: unknown;
-  } = { method: "GET" }
+    expectJson?: boolean;
+  } = { method: "GET", expectJson: true }
 ): Promise<T> {
   // Ensure the URL is relative to the current domain in production
   // This prevents issues with absolute paths in deployed environments
@@ -31,13 +32,29 @@ export async function apiRequest<T>(
   console.log(`API response status: ${res.status} ${res.statusText}`);
   
   await throwIfResNotOk(res);
-  return await res.json();
+  
+  // For endpoints that return empty responses or non-JSON responses
+  const expectJson = options.expectJson !== false;
+  
+  if (!expectJson) {
+    // Return an empty object if we don't expect JSON
+    return {} as T;
+  }
+  
+  // Check if there's actually content to parse
+  const contentType = res.headers.get('content-type');
+  if (contentType && contentType.includes('application/json')) {
+    return await res.json();
+  } else {
+    console.warn(`Response is not JSON: ${contentType}`);
+    return {} as T;
+  }
 }
 
 type UnauthorizedBehavior = "returnNull" | "throw";
-export const getQueryFn: <T>(options: {
+export const getQueryFn: <TData>(options: {
   on401: UnauthorizedBehavior;
-}) => QueryFunction<T> =
+}) => QueryFunction<TData> =
   ({ on401: unauthorizedBehavior }) =>
   async ({ queryKey }) => {
     // Handle query keys that include an ID parameter
@@ -79,7 +96,15 @@ export const getQueryFn: <T>(options: {
     }
 
     await throwIfResNotOk(res);
-    return await res.json();
+    
+    // Check if there's actually content to parse
+    const contentType = res.headers.get('content-type');
+    if (contentType && contentType.includes('application/json')) {
+      return await res.json();
+    } else {
+      console.warn(`Query response is not JSON: ${contentType}`);
+      return {} as TData;
+    }
   };
 
 export const queryClient = new QueryClient({
