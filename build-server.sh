@@ -73,6 +73,8 @@ echo "Adding production debugging utilities..."
 # Copy to both locations to ensure it's found regardless of where the server is started from
 cp production-debug.js dist/production-debug.js
 cp production-debug.js dist/server/production-debug.js
+cp production-startup-check.js dist/production-startup-check.js
+cp production-startup-check.js dist/server/production-startup-check.js
 
 # Step 6.5: Set up enhanced entry point for production
 echo "Setting up enhanced entry point..."

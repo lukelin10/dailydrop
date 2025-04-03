@@ -11,6 +11,27 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+// Import production startup diagnostics
+let runAllDiagnostics;
+try {
+  const { runAllDiagnostics: diagnostics } = await import('./production-startup-check.js');
+  runAllDiagnostics = diagnostics;
+  console.log('Successfully imported production-startup-check.js');
+} catch (error) {
+  try {
+    const { runAllDiagnostics: diagnostics } = await import('../production-startup-check.js');
+    runAllDiagnostics = diagnostics;
+    console.log('Successfully imported production-startup-check.js from parent directory');
+  } catch (secondError) {
+    console.error('Failed to import production-startup-check.js', secondError.message);
+    runAllDiagnostics = async () => {
+      console.log('Using fallback diagnostics');
+      console.log('NODE_ENV:', process.env.NODE_ENV);
+      console.log('Current working directory:', process.cwd());
+    };
+  }
+}
+
 // Dynamic import of production-debug.js - try multiple possible locations
 let logProductionEnvironment, createSymlinkIfNeeded;
 
@@ -46,6 +67,16 @@ try {
 // Log environment information for debugging in production
 console.log('Starting server with enhanced debugging...');
 logProductionEnvironment();
+
+// Run startup diagnostics if not in development mode
+if (process.env.NODE_ENV !== 'development') {
+  console.log('Running production startup diagnostics...');
+  try {
+    await runAllDiagnostics();
+  } catch (error) {
+    console.error('Error running diagnostics:', error);
+  }
+}
 
 // Initialize Express application
 const app = express();
