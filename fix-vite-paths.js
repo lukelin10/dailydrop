@@ -52,13 +52,20 @@ async function fixPaths() {
         // Handle client source files
         if (req.originalUrl.startsWith('/src/')) {
           try {
-            const filePath = path.resolve(__dirname, '..', '..', '..', 'client', req.originalUrl);
+            // Map /src/ requests directly to client/src/
+            // Remove the leading /src/ and replace with client/src/
+            const relativePath = req.originalUrl.replace(/^\/src\//, '');
+            const filePath = path.resolve(__dirname, '..', '..', '..', 'client', 'src', relativePath);
+            
             if (fs.existsSync(filePath)) {
               // Let vite handle the transformation
               next();
               return;
+            } else {
+              console.log(`[Path Resolution] File not found: ${filePath}`);
             }
           } catch (e) {
+            console.error('[Path Resolution Error]', e);
             // Ignore and continue with normal handling
           }
         }
