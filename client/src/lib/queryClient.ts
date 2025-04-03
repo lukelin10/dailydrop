@@ -14,13 +14,22 @@ export async function apiRequest<T>(
     body?: unknown;
   } = { method: "GET" }
 ): Promise<T> {
-  const res = await fetch(url, {
+  // Ensure the URL is relative to the current domain in production
+  // This prevents issues with absolute paths in deployed environments
+  const apiUrl = url.startsWith('http') ? url : url.startsWith('/') ? url : `/${url}`;
+  
+  console.log("Making API request to:", apiUrl);
+  
+  const res = await fetch(apiUrl, {
     method: options.method,
     headers: options.body ? { "Content-Type": "application/json" } : {},
     body: options.body ? JSON.stringify(options.body) : undefined,
     credentials: "include",
   });
 
+  // Log response status to help with debugging
+  console.log(`API response status: ${res.status} ${res.statusText}`);
+  
   await throwIfResNotOk(res);
   return await res.json();
 }
@@ -52,11 +61,18 @@ export const getQueryFn: <T>(options: {
       url = queryKey[0] as string;
     }
 
-    console.log("API Request URL:", url);
+    // Ensure the URL is relative to the current domain in production
+    // This prevents issues with absolute paths in deployed environments
+    const apiUrl = url.startsWith('http') ? url : url.startsWith('/') ? url : `/${url}`;
+    
+    console.log("API Request URL:", apiUrl);
 
-    const res = await fetch(url, {
+    const res = await fetch(apiUrl, {
       credentials: "include",
     });
+    
+    // Log response status to help with debugging
+    console.log(`Query response status: ${res.status} ${res.statusText}`);
 
     if (unauthorizedBehavior === "returnNull" && res.status === 401) {
       return null;

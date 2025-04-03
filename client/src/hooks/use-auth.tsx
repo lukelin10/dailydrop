@@ -54,19 +54,38 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const googleLoginMutation = useMutation({
     mutationFn: async () => {
-      const googleUser = await signInWithGoogle();
-      return await apiRequest<SelectUser>("/api/google-login", {
-        method: "POST",
-        body: {
-          uid: googleUser.uid,
-          email: googleUser.email,
+      try {
+        console.log("Starting Google login flow...");
+        const googleUser = await signInWithGoogle();
+        console.log("Google auth successful, got user:", googleUser?.uid ? "uid present" : "uid missing");
+        
+        if (!googleUser?.uid) {
+          throw new Error("Failed to get user ID from Google authentication");
         }
-      });
+        
+        console.log("Sending credentials to backend...");
+        const response = await apiRequest<SelectUser>("/api/google-login", {
+          method: "POST",
+          body: {
+            uid: googleUser.uid,
+            email: googleUser.email || "unknown@example.com", // Fallback if email is null/undefined
+          }
+        });
+        
+        console.log("Backend authentication successful");
+        return response;
+      } catch (err) {
+        console.error("Google login flow error:", err);
+        // Re-throw to trigger onError
+        throw err;
+      }
     },
     onSuccess: (user: SelectUser) => {
+      console.log("Login successful, updating user state");
       queryClient.setQueryData(["/api/user"], user);
     },
     onError: (error: Error) => {
+      console.error("Google login failed:", error);
       toast({
         title: "Google login failed",
         description: error.message,
