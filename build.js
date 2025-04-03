@@ -1,29 +1,14 @@
-import fs from 'fs';
-import path from 'path';
-import { fileURLToPath } from 'url';
 import { execSync } from 'child_process';
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 console.log('Starting build process...');
 
-// Ensure the dist directory exists
-const distDir = path.join(__dirname, 'dist');
-if (!fs.existsSync(distDir)) {
-  fs.mkdirSync(distDir, { recursive: true });
-}
-
 try {
-  // Run the server build script
-  console.log('Building server...');
-  execSync('bash build-server.sh', { stdio: 'inherit' });
-
-  // Build the client
-  console.log('Building client...');
-  execSync('npm run build', { stdio: 'inherit' });
+  // Run the consolidated production build script
+  console.log('Building application for production...');
+  execSync('node build-production.js', { stdio: 'inherit' });
 
   console.log('Build process completed successfully');
+  console.log('To run the production server: node build-production.js --run');
 } catch (error) {
   console.error('Build process failed:', error);
   process.exit(1);
