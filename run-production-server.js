@@ -46,6 +46,7 @@ if (!fs.existsSync(serverScript)) {
   
   // Try alternative locations
   const alternatives = [
+    path.join(rootDir, 'dist/server/server/index.js'), // This is our fixed file
     path.join(rootDir, 'server/index.js'),
     path.join(__dirname, 'server/index.js'),
     path.join(__dirname, 'dist/server/index.js')
