@@ -12,84 +12,112 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+// Get the directory name in ESM
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-console.log('--- Path Debug Information ---');
+console.log('=== PATH RESOLUTION DEBUG INFO ===');
 console.log('Current working directory:', process.cwd());
 console.log('__dirname:', __dirname);
 
-// Check dist directory structure
-const distDir = path.resolve(process.cwd(), 'dist');
-console.log('\n--- Checking dist directory structure ---');
-console.log('dist path:', distDir);
-console.log('dist exists:', fs.existsSync(distDir));
+// Check dist structure
+const rootDir = process.cwd();
+console.log('\nFile system structure:');
 
-if (fs.existsSync(distDir)) {
-  // List contents of dist
-  console.log('\nContents of dist:');
-  const distContents = fs.readdirSync(distDir);
-  console.log(distContents);
-
-  // Check for public directory
-  const publicDir = path.resolve(distDir, 'public');
-  console.log('\nChecking public directory:');
-  console.log('public path:', publicDir);
-  console.log('public exists:', fs.existsSync(publicDir));
-  
-  if (fs.existsSync(publicDir)) {
-    console.log('Contents of public:');
-    const publicFiles = fs.readdirSync(publicDir);
-    console.log(publicFiles);
-    console.log('index.html exists:', publicFiles.includes('index.html'));
-  }
-
-  // Check server directory  
-  const serverDir = path.resolve(distDir, 'server');
-  console.log('\nChecking server directory:');
-  console.log('server path:', serverDir);
-  console.log('server exists:', fs.existsSync(serverDir));
-  
-  if (fs.existsSync(serverDir)) {
-    console.log('Contents of server:');
-    const serverFiles = fs.readdirSync(serverDir);
-    console.log(serverFiles);
-    console.log('index.js exists:', serverFiles.includes('index.js'));
-    
-    // Check server/server directory
-    const serverServerDir = path.resolve(serverDir, 'server');
-    console.log('\nChecking server/server directory:');
-    console.log('server/server path:', serverServerDir);
-    console.log('server/server exists:', fs.existsSync(serverServerDir));
-    
-    if (fs.existsSync(serverServerDir)) {
-      console.log('Contents of server/server:');
-      console.log(fs.readdirSync(serverServerDir));
-    }
-  }
-
-  // Check for vite.js file
-  const viteJsPath = path.resolve(serverDir, 'server', 'vite.js');
-  console.log('\nChecking vite.js file:');
-  console.log('vite.js path:', viteJsPath);
-  console.log('vite.js exists:', fs.existsSync(viteJsPath));
-  
-  // Test path resolution that would be used in serveStatic
-  const distPathFromVite = path.resolve(path.dirname(viteJsPath), 'public');
-  console.log('\nTesting path resolution used in server/vite.js:');
-  console.log('Original distPath would be:', distPathFromVite);
-  console.log('This path exists:', fs.existsSync(distPathFromVite));
-  
-  // Try alternative resolutions
-  const alternativePath1 = path.resolve(path.dirname(viteJsPath), '../../public');
-  console.log('\nAlternative path resolution 1:');
-  console.log('Path:', alternativePath1);
-  console.log('Path exists:', fs.existsSync(alternativePath1));
-  
-  const alternativePath2 = path.resolve(distDir, 'public');
-  console.log('\nAlternative path resolution 2:');
-  console.log('Path:', alternativePath2);
-  console.log('Path exists:', fs.existsSync(alternativePath2));
+// List root directory
+try {
+  const rootContents = fs.readdirSync(rootDir);
+  console.log(`Root directory (${rootDir}) contents:`, rootContents);
+} catch (error) {
+  console.error(`Could not read root directory: ${error.message}`);
 }
 
-console.log('\n--- End of Debug Information ---');
+// Check dist directory
+const distDir = path.join(rootDir, 'dist');
+try {
+  if (fs.existsSync(distDir)) {
+    const distContents = fs.readdirSync(distDir);
+    console.log(`dist directory contents:`, distContents);
+    
+    // Check public directory
+    const publicDir = path.join(distDir, 'public');
+    if (fs.existsSync(publicDir)) {
+      const publicContents = fs.readdirSync(publicDir);
+      console.log(`public directory contents (${publicContents.length} items):`);
+      console.log(publicContents.slice(0, 10)); // First 10 items
+      
+      // Check for index.html
+      const indexPath = path.join(publicDir, 'index.html');
+      console.log(`index.html exists:`, fs.existsSync(indexPath));
+    } else {
+      console.error(`public directory doesn't exist!`);
+    }
+    
+    // Check server directory structure
+    const serverDir = path.join(distDir, 'server');
+    if (fs.existsSync(serverDir)) {
+      const serverContents = fs.readdirSync(serverDir);
+      console.log(`server directory contents:`, serverContents);
+      
+      // Check vite.js
+      const viteJsPath = path.join(serverDir, 'server', 'vite.js');
+      if (fs.existsSync(viteJsPath)) {
+        console.log('vite.js found at:', viteJsPath);
+      } else {
+        console.error('vite.js not found at expected path:', viteJsPath);
+      }
+    }
+  } else {
+    console.error(`dist directory doesn't exist!`);
+  }
+} catch (error) {
+  console.error(`Error inspecting dist directory: ${error.message}`);
+}
+
+// Validate path resolution for server
+console.log('\nValidating path resolution for server:');
+const serverIndexPath = path.join(distDir, 'server', 'index.js');
+if (fs.existsSync(serverIndexPath)) {
+  console.log(`Server entry point exists at: ${serverIndexPath}`);
+} else {
+  console.error(`Server entry point not found at: ${serverIndexPath}`);
+}
+
+// Validate shared schema
+const sharedSchemaPath = path.join(distDir, 'shared', 'schema.js');
+if (fs.existsSync(sharedSchemaPath)) {
+  console.log(`Shared schema exists at: ${sharedSchemaPath}`);
+} else {
+  console.error(`Shared schema not found at: ${sharedSchemaPath}`);
+}
+
+// Print potential static file serving paths
+console.log('\nPotential static file serving paths:');
+const possiblePaths = [
+  path.join(distDir, 'public'),
+  path.join(distDir, 'server', 'public'),
+  path.join(distDir, 'server', 'server', 'public')
+];
+
+for (const testPath of possiblePaths) {
+  const exists = fs.existsSync(testPath);
+  const hasIndex = exists && fs.existsSync(path.join(testPath, 'index.html'));
+  console.log(`Path: ${testPath}`);
+  console.log(`  - Exists: ${exists}`);
+  console.log(`  - Has index.html: ${hasIndex}`);
+  
+  if (exists) {
+    // Check if it's a symlink
+    try {
+      const stat = fs.lstatSync(testPath);
+      if (stat.isSymbolicLink()) {
+        const target = fs.readlinkSync(testPath);
+        console.log(`  - Is symlink to: ${target}`);
+      }
+    } catch (error) {
+      console.error(`  - Error checking symlink: ${error.message}`);
+    }
+  }
+}
+
+console.log('=== END PATH DEBUG INFO ===');

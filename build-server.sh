@@ -68,14 +68,13 @@ cp shared/schema.ts dist/shared/schema.js
 # Only add .js extension to imports that don't already have it
 sed -i '/\/\// !{/\.js['"'"'"]/ !s|from \(['"'"']\)\([^'"'"']*\)\1|from \1\2.js\1|g}' dist/shared/schema.js
 
-# Step 6: Set up entry point
-echo "Setting up entry point..."
-cp dist/server/server/index.js dist/server/index.js
+# Step 6: Include debug utilities for production
+echo "Adding production debugging utilities..."
+cp production-debug.js dist/production-debug.js
 
-# Update import paths in the entry point to correctly reference files in the server directory
-echo "Updating import paths in entry point..."
-sed -i 's|import { registerRoutes } from "./routes.js";|import { registerRoutes } from "./server/routes.js";|g' dist/server/index.js
-sed -i 's|import { setupVite, serveStatic, log } from "./vite.js";|import { setupVite, serveStatic, log } from "./server/vite.js";|g' dist/server/index.js
+# Step 6.5: Set up enhanced entry point for production
+echo "Setting up enhanced entry point..."
+cp modified-server-index.js dist/server/index.js
 
 # Step 7: Final verification
 echo "Performing final verification..."
