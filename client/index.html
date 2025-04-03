@@ -6,14 +6,6 @@
   </head>
   <body>
     <div id="root"></div>
-    <!-- Conditional loading of JS based on environment -->
-    <script>
-      // In production, the script tag is replaced with bundled assets during build
-      if (window.location.hostname !== 'localhost' && !window.location.hostname.includes('replit.dev')) {
-        console.error('Error: Development index.html being served in production environment.');
-        document.body.innerHTML = '<div style="font-family: sans-serif; padding: 20px;"><h1>Error: Incorrect build</h1><p>The development version of index.html is being served in production. Please check the build process.</p></div>';
-      }
-    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
