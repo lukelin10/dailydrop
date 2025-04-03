@@ -93,7 +93,7 @@ export function getQueryFn<TData>(options: {
     console.log(`Query response status: ${res.status} ${res.statusText}`);
 
     if (on401 === "returnNull" && res.status === 401) {
-      return null;
+      return null as unknown as TData;
     }
 
     await throwIfResNotOk(res);
