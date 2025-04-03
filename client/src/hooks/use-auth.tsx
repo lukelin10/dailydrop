@@ -54,52 +54,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const googleLoginMutation = useMutation({
     mutationFn: async () => {
-      try {
-        console.log("Starting Google login flow...");
-        const googleUser = await signInWithGoogle();
-        console.log("Google auth successful, got user:", googleUser?.uid ? "uid present" : "uid missing");
-        
-        if (!googleUser?.uid) {
-          throw new Error("Failed to get user ID from Google authentication");
+      // Get user from Google sign-in
+      const googleUser = await signInWithGoogle();
+      
+      // Send credentials to backend
+      return await apiRequest<SelectUser>("/api/google-login", {
+        method: "POST",
+        body: {
+          uid: googleUser.uid,
+          email: googleUser.email || "unknown@example.com",
         }
-        
-        console.log("Sending credentials to backend...");
-        
-        try {
-          // Use a specific catch for the API request to handle HTML responses
-          const response = await apiRequest<SelectUser>("/api/google-login", {
-            method: "POST",
-            body: {
-              uid: googleUser.uid,
-              email: googleUser.email || "unknown@example.com", // Fallback if email is null/undefined
-            }
-          });
-          
-          console.log("Backend authentication successful");
-          return response;
-        } catch (apiErr: any) {
-          console.error("API request failed:", apiErr);
-          
-          // If the error contains HTML, it's likely a 502 or other infrastructure error
-          if (apiErr.message && apiErr.message.includes("<!DOCTYPE")) {
-            throw new Error("Login service is temporarily unavailable. Please try again later.");
-          }
-          
-          // Re-throw other errors
-          throw apiErr;
-        }
-      } catch (err) {
-        console.error("Google login flow error:", err);
-        // Re-throw to trigger onError
-        throw err;
-      }
+      });
     },
     onSuccess: (user: SelectUser) => {
-      console.log("Login successful, updating user state");
       queryClient.setQueryData(["/api/user"], user);
     },
     onError: (error: Error) => {
-      console.error("Google login failed:", error);
       toast({
         title: "Google login failed",
         description: error.message,
