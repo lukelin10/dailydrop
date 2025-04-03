@@ -28,6 +28,18 @@ cp shared/schema.ts dist/shared/schema.js
 # Only add .js extension to imports that don't already have it
 sed -i '/\/\// !{/\.js['"'"'"]/ !s|from \(['"'"']\)\([^'"'"']*\)\1|from \1\2.js\1|g}' dist/shared/schema.js
 
+# Step 5b: Ensure client/index.html is in all the necessary locations
+echo "Ensuring index.html is available in all necessary locations..."
+# Make client directory and copy index.html
+mkdir -p dist/client
+cp client/index.html dist/client/
+# Make server/client directory and copy index.html (expected by vite.js)
+mkdir -p dist/server/client
+cp client/index.html dist/server/client/
+# Also copy to server/server/client for relative path resolution
+mkdir -p dist/server/server/client
+cp client/index.html dist/server/server/client/
+
 # Step 6: Include debugging utilities
 echo "Setting up debugging utilities..."
 # Copy to both root and server directories to ensure they can be found
@@ -76,9 +88,17 @@ console.log(`Client directory exists: ${fs.existsSync(clientDir)}`);
 const serverDir = path.resolve(__dirname, 'server');
 console.log(`Server directory exists: ${fs.existsSync(serverDir)}`);
 
-// Check if index.html exists
-const indexHtmlPath = path.resolve(__dirname, 'client', 'index.html');
-console.log(`Client index.html exists: ${fs.existsSync(indexHtmlPath)}`);
+// Check if index.html exists in all possible locations
+const indexHtmlPath1 = path.resolve(__dirname, 'client', 'index.html');
+const indexHtmlPath2 = path.resolve(__dirname, 'server', 'client', 'index.html');
+const indexHtmlPath3 = path.resolve(__dirname, 'server', 'server', 'client', 'index.html');
+const indexHtmlPath4 = path.resolve(__dirname, 'public', 'index.html');
+
+console.log(`Client index.html locations:`);
+console.log(`- dist/client/index.html exists: ${fs.existsSync(indexHtmlPath1)}`);
+console.log(`- dist/server/client/index.html exists: ${fs.existsSync(indexHtmlPath2)}`);
+console.log(`- dist/server/server/client/index.html exists: ${fs.existsSync(indexHtmlPath3)}`);
+console.log(`- dist/public/index.html exists: ${fs.existsSync(indexHtmlPath4)}`);
 
 // Check if server/index.js exists
 const serverIndexPath = path.resolve(__dirname, 'server', 'index.js');
@@ -151,24 +171,61 @@ if [ ! -f "dist/public/index.html" ]; then
   exit 1
 fi
 
+# Copy path debug tool to dist directory
+cp path-debug.js dist/path-debug.js
+
 # Step 10: Create a starting script
 cat > dist/start.sh << 'EOF'
 #!/bin/bash
-echo "Starting production server..."
+set -e
+
+# Initialize
+export NODE_ENV=production
+
+echo "=== Production Server Startup ==="
+echo "Starting server at: $(date)"
 echo "NODE_ENV: $NODE_ENV"
 echo "Current directory: $(pwd)"
-echo "Files in this directory: $(ls -la)"
 
 # Run environment check first
 echo "Running environment check..."
 node check-environment.js
 
-# Check port binding
+# Run path debug tool to verify directory structure
+echo "Checking file paths and directory structure..."
+node path-debug.js
+
+# Test port binding capability
 echo "Testing port binding..."
 node test-port-binding.js
 
-# Start the server
-echo "Starting the actual server..."
+# Create symlink for client/index.html if missing in server/client
+if [ ! -f "server/client/index.html" ]; then
+  echo "Creating missing directory: server/client"
+  mkdir -p server/client
+  echo "Copying index.html to server/client directory"
+  cp client/index.html server/client/index.html
+  echo "Created server/client/index.html"
+fi
+
+# Create symlink for client/index.html if missing in server/server/client
+if [ ! -f "server/server/client/index.html" ]; then
+  echo "Creating missing directory: server/server/client"
+  mkdir -p server/server/client
+  echo "Copying index.html to server/server/client directory"
+  cp client/index.html server/server/client/index.html
+  echo "Created server/server/client/index.html"
+fi
+
+# Final verification before startup
+echo "Running final verification before startup..."
+if [ ! -f "server/server/vite.js" ]; then
+  echo "ERROR: server/server/vite.js not found!"
+  exit 1
+fi
+
+# Start the server with proper error handling
+echo "Starting the application server..."
 node server/index.js
 EOF
 

@@ -14,4 +14,9 @@ npx vite build --outDir dist/public
 mkdir -p dist/client
 cp client/index.html dist/client/
 
+# IMPORTANT: Also copy client/index.html to dist/server/client/
+# This is where server/vite.js will look for it
+mkdir -p dist/server/client
+cp client/index.html dist/server/client/
+
 echo "Client build complete."

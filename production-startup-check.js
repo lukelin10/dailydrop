@@ -15,11 +15,10 @@
 
 import fs from 'fs';
 import path from 'path';
-import { fileURLToPath } from 'url';
 import http from 'http';
 import os from 'os';
+import { fileURLToPath } from 'url';
 
-// Get the directory name
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -27,24 +26,16 @@ const __dirname = path.dirname(__filename);
  * Run all diagnostic checks
  */
 export async function runAllDiagnostics() {
-  console.log('=== PRODUCTION STARTUP DIAGNOSTICS ===');
+  console.log('=== Production Startup Diagnostics ===');
+  console.log('Running diagnostics at:', new Date().toISOString());
   
-  // Log basic environment information
   logEnvironmentInfo();
-  
-  // Check file system access
   checkFileSystemAccess();
-  
-  // Verify critical paths
   verifyCriticalPaths();
-  
-  // Test port binding
   await testPortBinding();
-  
-  // Check network interfaces
   checkNetworkInterfaces();
   
-  console.log('=== END DIAGNOSTICS ===\n');
+  console.log('=== Diagnostics Complete ===');
 }
 
 /**
@@ -52,24 +43,29 @@ export async function runAllDiagnostics() {
  */
 function logEnvironmentInfo() {
   console.log('\n--- Environment Information ---');
-  console.log('NODE_ENV:', process.env.NODE_ENV);
-  console.log('Current Working Directory:', process.cwd());
-  console.log('Script Directory (__dirname):', __dirname);
-  console.log('Node Version:', process.version);
+  console.log('Node.js Version:', process.version);
   console.log('Platform:', process.platform);
   console.log('Architecture:', process.arch);
-  console.log('Memory Usage:', process.memoryUsage());
-  console.log('Uptime:', process.uptime(), 'seconds');
+  console.log('Process ID:', process.pid);
+  console.log('Current Working Directory:', process.cwd());
+  console.log('Script Directory (__dirname):', __dirname);
+  console.log('NODE_ENV:', process.env.NODE_ENV || 'not set');
+  console.log('PORT:', process.env.PORT || '(default)');
   
-  // Check environment variables
-  const requiredEnvVars = ['PORT', 'DATABASE_URL'];
-  for (const envVar of requiredEnvVars) {
-    if (process.env[envVar]) {
-      console.log(`${envVar}: [PRESENT]`);
-    } else {
-      console.log(`${envVar}: [MISSING]`);
-    }
-  }
+  // Log memory usage
+  const memoryUsage = process.memoryUsage();
+  console.log('Memory Usage:');
+  console.log('  - RSS:', Math.round(memoryUsage.rss / 1024 / 1024), 'MB');
+  console.log('  - Heap Total:', Math.round(memoryUsage.heapTotal / 1024 / 1024), 'MB');
+  console.log('  - Heap Used:', Math.round(memoryUsage.heapUsed / 1024 / 1024), 'MB');
+  
+  // Log system memory
+  const totalMem = Math.round(os.totalmem() / 1024 / 1024);
+  const freeMem = Math.round(os.freemem() / 1024 / 1024);
+  console.log('System Memory:');
+  console.log('  - Total:', totalMem, 'MB');
+  console.log('  - Free:', freeMem, 'MB');
+  console.log('  - Used:', totalMem - freeMem, 'MB');
 }
 
 /**
@@ -78,50 +74,21 @@ function logEnvironmentInfo() {
 function checkFileSystemAccess() {
   console.log('\n--- File System Access Check ---');
   
-  // Test dirs to check for access
-  const dirsToCheck = [
-    process.cwd(),
-    path.join(process.cwd(), 'dist'),
-    path.join(process.cwd(), 'dist/public'),
-    path.join(process.cwd(), 'dist/server'),
-    __dirname
-  ];
-  
-  for (const dir of dirsToCheck) {
-    try {
-      if (fs.existsSync(dir)) {
-        const stats = fs.statSync(dir);
-        console.log(`${dir}: ${stats.isDirectory() ? 'Directory' : 'Not a directory'} [ACCESSIBLE]`);
-        
-        try {
-          // Try to list directory contents
-          const files = fs.readdirSync(dir);
-          console.log(`  - Contains ${files.length} files/directories`);
-        } catch (readError) {
-          console.log(`  - Unable to read directory contents: ${readError.message}`);
-        }
-      } else {
-        console.log(`${dir}: [DOES NOT EXIST]`);
-      }
-    } catch (error) {
-      console.log(`${dir}: [ERROR] ${error.message}`);
-    }
-  }
-  
-  // Test write access to temp directory
-  const tempFile = path.join(os.tmpdir(), 'replit-test-' + Date.now() + '.txt');
   try {
-    fs.writeFileSync(tempFile, 'Test write access');
-    console.log(`Temp file write: [SUCCESS] at ${tempFile}`);
+    // Check if we can create and write to a temporary file
+    const tempFile = path.join(os.tmpdir(), `diagnostics-${Date.now()}.tmp`);
+    fs.writeFileSync(tempFile, 'Test file system access');
+    console.log('✅ Successfully wrote to temp file:', tempFile);
     
-    try {
-      fs.unlinkSync(tempFile);
-      console.log('Temp file cleanup: [SUCCESS]');
-    } catch (cleanupError) {
-      console.log(`Temp file cleanup: [FAILED] ${cleanupError.message}`);
-    }
-  } catch (writeError) {
-    console.log(`Temp file write: [FAILED] ${writeError.message}`);
+    // Try to read it back
+    const content = fs.readFileSync(tempFile, 'utf8');
+    console.log('✅ Successfully read from temp file');
+    
+    // Clean up
+    fs.unlinkSync(tempFile);
+    console.log('✅ Successfully deleted temp file');
+  } catch (error) {
+    console.error('❌ File system access error:', error.message);
   }
 }
 
@@ -131,54 +98,46 @@ function checkFileSystemAccess() {
 function verifyCriticalPaths() {
   console.log('\n--- Critical Path Verification ---');
   
-  // List of critical files to check
-  const criticalFiles = [
-    { path: path.join(process.cwd(), 'dist/server/index.js'), description: 'Server Entry Point' },
-    { path: path.join(process.cwd(), 'dist/server/production-debug.js'), description: 'Production Debug Utilities' },
-    { path: path.join(process.cwd(), 'dist/public/index.html'), description: 'Client Entry Point' },
-    { path: path.join(process.cwd(), 'dist/server/server/vite.js'), description: 'Vite Server Integration' }
+  // Define the critical paths for your application
+  const criticalPaths = [
+    { name: 'public directory', path: path.resolve(process.cwd(), 'public') },
+    { name: 'public/index.html', path: path.resolve(process.cwd(), 'public', 'index.html') },
+    { name: 'client directory', path: path.resolve(process.cwd(), 'client') },
+    { name: 'client/index.html', path: path.resolve(process.cwd(), 'client', 'index.html') },
+    { name: 'server directory', path: path.resolve(process.cwd(), 'server') },
+    { name: 'server/server directory', path: path.resolve(process.cwd(), 'server', 'server') }
   ];
   
-  for (const file of criticalFiles) {
+  // Check each path
+  criticalPaths.forEach(({ name, path }) => {
     try {
-      if (fs.existsSync(file.path)) {
-        const stats = fs.statSync(file.path);
-        console.log(`${file.description}: [FOUND] Size: ${stats.size} bytes, Modified: ${stats.mtime}`);
+      const exists = fs.existsSync(path);
+      if (exists) {
+        const stats = fs.statSync(path);
+        const type = stats.isDirectory() ? 'directory' : 'file';
+        console.log(`✅ ${name}: Found (${type})`);
       } else {
-        console.log(`${file.description}: [MISSING] at ${file.path}`);
-      }
-    } catch (error) {
-      console.log(`${file.description}: [ERROR] ${error.message}`);
-    }
-  }
-  
-  // Check static file directories
-  const staticDirs = [
-    path.join(process.cwd(), 'dist/public'),
-    path.join(process.cwd(), 'dist/server/public'),
-    path.join(process.cwd(), 'dist/server/server/public')
-  ];
-  
-  console.log('\nStatic File Directories:');
-  for (const dir of staticDirs) {
-    try {
-      if (fs.existsSync(dir)) {
-        const files = fs.readdirSync(dir);
-        const hasIndexHtml = files.includes('index.html');
-        const hasAssets = files.includes('assets');
-        console.log(`${dir}: [EXISTS] Has index.html: ${hasIndexHtml}, Has assets: ${hasAssets}`);
+        console.log(`❌ ${name}: Missing`);
         
-        if (fs.lstatSync(dir).isSymbolicLink()) {
-          const target = fs.readlinkSync(dir);
-          console.log(`  - Is symbolic link to: ${target}`);
+        // Try to find alternative paths
+        if (name.includes('index.html')) {
+          const possiblePaths = [
+            path.resolve(__dirname, '..', 'client', 'index.html'),
+            path.resolve(__dirname, 'client', 'index.html'),
+            path.resolve(__dirname, 'public', 'index.html'),
+            path.resolve(__dirname, '..', 'public', 'index.html')
+          ];
+          
+          console.log('  Checking alternative paths:');
+          possiblePaths.forEach(altPath => {
+            console.log(`  - ${altPath}: ${fs.existsSync(altPath) ? '✅ Found' : '❌ Missing'}`);
+          });
         }
-      } else {
-        console.log(`${dir}: [DOES NOT EXIST]`);
       }
     } catch (error) {
-      console.log(`${dir}: [ERROR] ${error.message}`);
+      console.error(`❌ Error checking ${name}:`, error.message);
     }
-  }
+  });
 }
 
 /**
@@ -187,52 +146,30 @@ function verifyCriticalPaths() {
 async function testPortBinding() {
   console.log('\n--- Port Binding Test ---');
   
-  const port = process.env.PORT || 5000;
+  const PORT = process.env.PORT || 5000;
   
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     try {
-      // Create a simple test server
       const server = http.createServer((req, res) => {
         res.writeHead(200, { 'Content-Type': 'text/plain' });
         res.end('Port binding test successful');
       });
       
-      // Handle potential errors
       server.on('error', (error) => {
-        if (error.code === 'EADDRINUSE') {
-          console.log(`Port ${port} binding: [FAILED] Port is already in use`);
-        } else if (error.code === 'EACCES') {
-          console.log(`Port ${port} binding: [FAILED] Permission denied`);
-        } else {
-          console.log(`Port ${port} binding: [FAILED] ${error.message}`);
-        }
-        resolve();
+        console.error(`❌ Cannot bind to port ${PORT}:`, error.message);
+        resolve(false);
       });
       
-      // Try to listen on the port
-      server.listen(port, () => {
-        console.log(`Port ${port} binding: [SUCCESS] Server can bind to port`);
-        
-        // Close the server after successful binding
+      server.listen(PORT, '0.0.0.0', () => {
+        console.log(`✅ Successfully bound to port ${PORT}`);
         server.close(() => {
-          console.log(`Port ${port} released successfully`);
-          resolve();
+          console.log(`✅ Successfully closed test server`);
+          resolve(true);
         });
       });
-      
-      // Set a timeout in case the server never starts or closes
-      setTimeout(() => {
-        try {
-          server.close();
-        } catch (e) {
-          // Ignore errors on close
-        }
-        console.log('Port binding test: [TIMED OUT]');
-        resolve();
-      }, 5000);
     } catch (error) {
-      console.log(`Port binding test: [ERROR] ${error.message}`);
-      resolve();
+      console.error('❌ Unexpected error during port binding test:', error.message);
+      resolve(false);
     }
   });
 }
@@ -241,25 +178,29 @@ async function testPortBinding() {
  * Check network interfaces
  */
 function checkNetworkInterfaces() {
-  console.log('\n--- Network Interface Check ---');
+  console.log('\n--- Network Interfaces ---');
   
   const interfaces = os.networkInterfaces();
   
-  for (const [name, interfaceInfo] of Object.entries(interfaces)) {
+  for (const [name, netInterface] of Object.entries(interfaces)) {
     console.log(`Interface: ${name}`);
     
-    if (Array.isArray(interfaceInfo)) {
-      interfaceInfo.forEach((info, index) => {
-        console.log(`  Address ${index + 1}: ${info.address} (${info.family})`);
-        console.log(`    Internal: ${info.internal ? 'Yes' : 'No'}`);
-      });
-    }
+    if (!netInterface) continue;
+    
+    netInterface.forEach((iface, index) => {
+      console.log(`  [${index}] ${iface.family}:`);
+      console.log(`    Address: ${iface.address}`);
+      console.log(`    Netmask: ${iface.netmask}`);
+      console.log(`    MAC: ${iface.mac}`);
+      console.log(`    Internal: ${iface.internal}`);
+    });
   }
 }
 
-// Run diagnostics if this script is executed directly
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  runAllDiagnostics().catch(console.error);
+// If this script is run directly, execute all diagnostics
+if (import.meta.url === `file://${process.argv[1]}`) {
+  runAllDiagnostics().catch(error => {
+    console.error('Diagnostic tool error:', error);
+    process.exit(1);
+  });
 }
-
-export default { runAllDiagnostics };

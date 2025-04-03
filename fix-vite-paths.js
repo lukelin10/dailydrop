@@ -44,32 +44,64 @@ async function fixPaths() {
       'const distPath = path.resolve(__dirname, "..", "..", "public");'
     );
     
-    // Fix 2: Add logic to correctly handle client src paths
-    // Find the setupVite function and update the clientTemplate path and handling
+    // Fix 2: Fix the index.html path in the fallthrough handler
+    content = content.replace(
+      'res.sendFile(path.resolve(distPath, "index.html"));',
+      `// Try to send from public directory first
+      const publicIndexPath = path.resolve(distPath, "index.html");
+      if (fs.existsSync(publicIndexPath)) {
+        return res.sendFile(publicIndexPath);
+      }
+      
+      // Fall back to client directory if public index doesn't exist
+      const clientIndexPath = path.resolve(__dirname, "..", "client", "index.html");
+      if (fs.existsSync(clientIndexPath)) {
+        return res.sendFile(clientIndexPath);
+      }
+      
+      // Last resort - try an absolute path
+      const absoluteIndexPath = path.resolve(process.cwd(), "dist", "public", "index.html");
+      if (fs.existsSync(absoluteIndexPath)) {
+        return res.sendFile(absoluteIndexPath);
+      }
+      
+      // Nothing found, send a readable error
+      console.error("[Static Serving] Could not find index.html in any location");
+      res.status(500).send("Error: Could not find index.html file. Please make sure the application is built correctly.")`
+    );
+    
+    // Fix 3: Add logging to help diagnose template loading issues
+    content = content.replace(
+      'let template = await fs.promises.readFile(clientTemplate, "utf-8");',
+      `console.log("[Vite] Loading template from:", clientTemplate);
+      console.log("[Vite] Template exists:", fs.existsSync(clientTemplate));
+      let template = await fs.promises.readFile(clientTemplate, "utf-8");`
+    );
+    
+    // Fix 4: Add a try/catch block around template reading in serveStatic
+    content = content.replace(
+      'serveStatic = (app) => {',
+      `serveStatic = (app) => {
+        console.log("[Vite] Setting up static file serving");`
+    );
+    
+    // Fix 5: Add better error handling for the template loading
     content = content.replace(
       'app.use("*", async (req, res, next) => {',
       `app.use("*", async (req, res, next) => {
-        // Handle client source files
-        if (req.originalUrl.startsWith('/src/')) {
-          try {
-            // Map /src/ requests directly to client/src/
-            // Remove the leading /src/ and replace with client/src/
-            const relativePath = req.originalUrl.replace(/^\\/src\\//, '');
-            const filePath = path.resolve(__dirname, '..', '..', '..', 'client', 'src', relativePath);
-            
-            if (fs.existsSync(filePath)) {
-              // Let vite handle the transformation
-              next();
-              return;
-            } else {
-              console.log('[Path Resolution] File not found:', filePath);
-            }
-          } catch (e) {
-            console.error("[Path Resolution Error]", e);
-            // Ignore and continue with normal handling
-          }
-        }
+        // Additional debugging for request handling
+        console.log("[Vite] Handling request:", req.originalUrl);
+        
+        try {
         `
+    );
+    
+    // Fix 6: Add corresponding catch block at the end of the function
+    content = content.replace(
+      'next(e);',
+      `console.error("[Vite Template Error]", e);
+          next(e);
+        }`
     );
     
     // Write the updated content back
