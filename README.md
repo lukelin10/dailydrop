@@ -109,3 +109,26 @@ This script:
 3. Provides detailed logs about any issues encountered
 
 The test script is designed to terminate automatically after a few seconds so it can be used for quick validation.
+
+### Deploying on Replit
+
+The application is configured for deployment on Replit using the following setup:
+
+1. The `.replit` file contains the deployment configuration:
+   ```
+   [deployment]
+   deploymentTarget = "cloudrun"
+   build = ["sh", "-c", "bash build-server.sh"]
+   run = ["sh", "-c", "node dist/server/index.js"]
+   ```
+
+2. The `build-server.sh` script is executed during deployment and:
+   - Builds the application for production using `build-production.js`
+   - Ensures all necessary files are properly placed in the output directory
+
+3. After deployment, the application runs from the compiled output in `dist/server/index.js`
+
+To deploy:
+1. Ensure all your changes are committed and pushed
+2. Use the "Deploy" button in the Replit interface
+3. The platform will automatically execute the build script and deploy the application

@@ -105,8 +105,17 @@ function verifyCriticalPaths() {
     { name: 'client directory', path: path.resolve(process.cwd(), 'client') },
     { name: 'client/index.html', path: path.resolve(process.cwd(), 'client', 'index.html') },
     { name: 'server directory', path: path.resolve(process.cwd(), 'server') },
-    { name: 'server/server directory', path: path.resolve(process.cwd(), 'server', 'server') }
-  ];
+    { name: 'server/server directory', path: path.resolve(process.cwd(), 'server', 'server') },
+    // Build-production.js specific paths
+    { name: 'dist directory', path: path.resolve(process.cwd(), 'dist') },
+    { name: 'dist/server directory', path: path.resolve(process.cwd(), 'dist', 'server') },
+    { name: 'dist/server/client directory', path: path.resolve(process.cwd(), 'dist', 'server', 'client') },
+    { name: 'dist/server/client/index.html', path: path.resolve(process.cwd(), 'dist', 'server', 'client', 'index.html') },
+    { name: 'dist/server/server/client directory', path: path.resolve(process.cwd(), 'dist', 'server', 'server', 'client') },
+    { name: 'dist/server/server/client/index.html', path: path.resolve(process.cwd(), 'dist', 'server', 'server', 'client', 'index.html') },
+    { name: 'build-server.sh', path: path.resolve(process.cwd(), 'build-server.sh') },
+    { name: 'build-production.js', path: path.resolve(process.cwd(), 'build-production.js') }
+  };
   
   // Check each path
   criticalPaths.forEach(({ name, path }) => {
