@@ -20,6 +20,7 @@ import { createServer, type Server } from "http";
 import { setupAuth } from "./auth.js";
 import { storage } from "./storage.js";
 import { insertEntrySchema, updateEntrySchema, insertChatMessageSchema, insertAnalysisSchema } from "../shared/schema.js";
+import type { ChatMessage } from "../shared/schema.js";
 import { nanoid } from "nanoid";
 import { generateChatResponse, generateAnalysis } from "./openai.js";
 import { getCurrentQuestion, setQuestionIndex } from "./sheets.js";
@@ -267,32 +268,86 @@ export function registerRoutes(app: Express): Server {
         return res.status(400).json({ message: "No entries to analyze" });
       }
       
-      // Prepare entries with their chat messages for analysis
-      const entriesWithChats = await Promise.all(
-        entries.map(async (entry) => {
-          const chatMessages = await storage.getChatMessages(entry.id);
-          return {
-            question: entry.question,
-            answer: entry.answer,
-            chatMessages
-          };
-        })
-      );
+      // Defensive check to ensure entries is an array before processing
+      if (!Array.isArray(entries)) {
+        console.error("entries is not an array:", entries);
+        return res.status(400).json({ message: "Invalid entries data" });
+      }
+
+      console.log(`Processing ${entries.length} entries for analysis`);
+      
+      // Prepare entries with their chat messages for analysis - with defensive programming
+      let entriesWithChats = [];
+      try {
+        entriesWithChats = await Promise.all(
+          entries.map(async (entry) => {
+            // Ensure each entry has an ID before trying to get chat messages
+            if (!entry || !entry.id) {
+              console.error("Invalid entry without ID:", entry);
+              return { question: "Missing question", answer: "Missing answer", chatMessages: [] };
+            }
+            
+            // Get chat messages with error handling
+            let chatMessages: ChatMessage[] = [];
+            try {
+              chatMessages = await storage.getChatMessages(entry.id);
+              // Ensure chatMessages is an array
+              if (!Array.isArray(chatMessages)) {
+                console.error(`Chat messages for entry ${entry.id} is not an array:`, chatMessages);
+                chatMessages = [];
+              }
+            } catch (chatError) {
+              console.error(`Error fetching chat messages for entry ${entry.id}:`, chatError);
+            }
+            
+            return {
+              question: entry.question || "Missing question",
+              answer: entry.answer || "Missing answer",
+              chatMessages
+            };
+          })
+        );
+      } catch (entriesError) {
+        console.error("Error processing entries for analysis:", entriesError);
+        // Ensure entries is an array before using map
+        entriesWithChats = Array.isArray(entries) 
+          ? entries.map(entry => ({
+              question: entry?.question || "Missing question",
+              answer: entry?.answer || "Missing answer",
+              chatMessages: []
+            }))
+          : [];
+      }
       
       // Generate analysis using OpenAI
+      console.log(`Sending ${entriesWithChats.length} processed entries to OpenAI for analysis`);
       const analysisContent = await generateAnalysis(entriesWithChats);
       
       // Create analysis record
       const analysis = await storage.createAnalysis(req.user.id, {
         content: analysisContent,
-        entryCount: entries.length
+        entryCount: Array.isArray(entries) ? entries.length : 0
       });
       
-      // Mark entries as analyzed
-      await storage.markEntriesAsAnalyzed(
-        req.user.id, 
-        entries.map(entry => entry.id)
-      );
+      // Mark entries as analyzed with defensive coding
+      try {
+        // Make sure entries is an array and only extract valid IDs
+        const entryIds = Array.isArray(entries) 
+          ? entries
+            .filter(entry => entry && entry.id)
+            .map(entry => entry.id)
+          : [];
+          
+        if (entryIds.length > 0) {
+          await storage.markEntriesAsAnalyzed(req.user.id, entryIds);
+          console.log(`Marked ${entryIds.length} entries as analyzed`);
+        } else {
+          console.warn("No valid entry IDs to mark as analyzed");
+        }
+      } catch (markError) {
+        console.error("Error marking entries as analyzed:", markError);
+        // Continue execution - this is not critical enough to fail the whole request
+      }
       
       // Update user's last analysis time
       await storage.updateUserLastAnalysisTime(req.user.id);

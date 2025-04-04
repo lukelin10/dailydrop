@@ -41,22 +41,37 @@ interface AnalysisEntry {
 
 async function generateAnalysis(entries: AnalysisEntry[]): Promise<string> {
   try {
+    // Defensive check to ensure entries is actually an array
+    if (!Array.isArray(entries)) {
+      console.error("generateAnalysis received non-array entries:", entries);
+      // Convert to array if possible or use empty array as fallback
+      entries = (entries && typeof entries === 'object') ? [entries] : [];
+    }
+
     let promptContent = "You are a close friend and confidant, similar to that of a therapist or coach with deep understanding of this person. Analyze these chats from the user answering a personal introspective question and the subsequent chat with a close friend. Provide insights about what's coming up for this person and provide helpful advice or wisdom to them based on what they've talked about. Here are the chat transcripts:\n\n";
     
     // Add each entry and its conversation to the prompt
-    entries.forEach((entry, index) => {
-      promptContent += `Entry ${index + 1}:\nQuestion: ${entry.question}\nUser's Answer: ${entry.answer}\n\n`;
+    // Use traditional for loop for better error isolation
+    for (let i = 0; i < entries.length; i++) {
+      const entry = entries[i];
+      // Skip invalid entries
+      if (!entry || typeof entry !== 'object') continue;
       
-      if (entry.chatMessages && entry.chatMessages.length > 0) {
+      promptContent += `Entry ${i + 1}:\nQuestion: ${entry.question || 'No question'}\nUser's Answer: ${entry.answer || 'No answer'}\n\n`;
+      
+      if (entry.chatMessages && Array.isArray(entry.chatMessages) && entry.chatMessages.length > 0) {
         promptContent += "Conversation:\n";
-        entry.chatMessages.forEach(msg => {
+        // Use traditional for loop instead of forEach for better error handling
+        for (let j = 0; j < entry.chatMessages.length; j++) {
+          const msg = entry.chatMessages[j];
+          if (!msg) continue;
           const role = msg.isBot ? "DropBot" : "User";
-          promptContent += `${role}: ${msg.content}\n`;
-        });
+          promptContent += `${role}: ${msg.content || ''}\n`;
+        }
       }
       
       promptContent += "\n---\n\n";
-    });
+    }
     
     const messages = [
       { role: "system", content: "You are a thoughtful therapist or coach who analyzes journal entries and conversations to provide meaningful insights and advice." },
