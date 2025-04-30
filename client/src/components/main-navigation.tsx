@@ -11,19 +11,19 @@ export default function MainNavigation() {
 
   const navItems = [
     {
-      name: "Drop",
+      name: "Today",
       path: "/",
       icon: <Droplet className="h-4 w-4 mr-2" />,
-      description: "Today's Question",
+      description: "Daily Question",
     },
     {
-      name: "Feed",
+      name: "Journal",
       path: "/feed",
       icon: <Archive className="h-4 w-4 mr-2" />,
       description: "Past Entries",
     },
     {
-      name: "Know",
+      name: "Insights",
       path: "/seek",
       icon: <BrainCog className="h-4 w-4 mr-2" />,
       description: "Analyses",

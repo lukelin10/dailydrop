@@ -79,6 +79,17 @@ body {
   color: white !important; /* Pure white for best contrast */
   font-weight: 600 !important;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2) !important;
+  border-radius: 8px !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.primary-button:hover:not(:disabled) {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 8px -2px rgba(192, 90, 46, 0.3) !important;
+}
+
+.primary-button:active:not(:disabled) {
+  transform: translateY(0) !important;
 }
 
 .primary-button svg {
@@ -94,6 +105,17 @@ body {
   color: white !important; /* Pure white for best contrast */
   font-weight: 600 !important;
   text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2) !important;
+  border-radius: 8px !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.secondary-button:hover:not(:disabled) {
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 8px -2px rgba(68, 88, 35, 0.3) !important;
+}
+
+.secondary-button:active:not(:disabled) {
+  transform: translateY(0) !important;
 }
 
 .secondary-button svg {
@@ -141,7 +163,15 @@ a svg,
 .card-container {
   background-color: hsl(37, 35%, 93%) !important; /* Warm Cream */
   color: hsl(0, 0%, 18%) !important; /* Charcoal Black */
-  border: 1px solid hsl(20, 25%, 40%) !important;
+  border: none !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 8px -2px rgba(59, 46, 42, 0.1), 0 2px 4px -2px rgba(59, 46, 42, 0.06) !important;
+  transition: box-shadow 0.2s ease, transform 0.2s ease !important;
+}
+
+.card-container:hover {
+  box-shadow: 0 6px 12px -2px rgba(59, 46, 42, 0.15), 0 3px 6px -2px rgba(59, 46, 42, 0.1) !important;
+  transform: translateY(-2px) !important;
 }
 
 /* Text styling */
@@ -242,4 +272,58 @@ a:hover {
 
 .card-shadow-md {
   box-shadow: 0 6px 10px -3px rgba(210, 125, 82, 0.2), 0 4px 6px -2px rgba(210, 125, 82, 0.1);
+}
+
+/* Micro-interactions and animations */
+.fade-in {
+  animation: fadeIn 0.5s ease forwards;
+}
+
+.slide-up {
+  animation: slideUp 0.3s ease forwards;
+}
+
+.pulse-once {
+  animation: pulse 0.6s ease-in-out;
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(10px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+/* Transitions */
+.page-transition {
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+.page-transition-enter {
+  opacity: 0;
+  transform: translateY(10px);
+}
+
+.page-transition-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.page-transition-exit {
+  opacity: 1;
+}
+
+.page-transition-exit-active {
+  opacity: 0;
+  transform: translateY(-10px);
 }

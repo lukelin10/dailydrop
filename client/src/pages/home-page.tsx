@@ -106,7 +106,7 @@ export default function HomePage() {
           </div>
           
           {showChat && currentEntryId ? (
-            <div className="space-y-6">
+            <div className="space-y-6 fade-in">
               <ChatInterface
                 entryId={currentEntryId}
                 question={entries.find(e => e.id === currentEntryId)?.question || ""}
@@ -115,9 +115,9 @@ export default function HomePage() {
               />
             </div>
           ) : (
-            <div className="space-y-6">
+            <div className="space-y-6 slide-up">
               {!todayEntry ? (
-                <div className="space-y-4 border border-primary/30 rounded-lg p-6 bg-card text-card-foreground card-container shadow-md">
+                <div className="space-y-4 rounded-lg p-6 bg-card text-card-foreground card-container">
                   <p className="text-lg font-medium">{dailyQuestion?.question}</p>
                   <Editor
                     onSave={(answer) => createEntryMutation.mutate(answer)}
@@ -125,10 +125,10 @@ export default function HomePage() {
                   />
                 </div>
               ) : (
-                <div className="space-y-4 border border-primary/30 rounded-lg p-6 bg-card text-card-foreground card-container shadow-md">
+                <div className="space-y-4 rounded-lg p-6 bg-card text-card-foreground card-container">
                   <div className="flex items-center justify-between mb-2">
                     <p className="text-lg font-medium">{todayEntry.question}</p>
-                    <div className="text-sm text-accent-foreground bg-secondary text-secondary-foreground px-2 py-1 rounded-md">
+                    <div className="text-sm text-white bg-secondary px-2 py-1 rounded-md">
                       Already answered today
                     </div>
                   </div>
