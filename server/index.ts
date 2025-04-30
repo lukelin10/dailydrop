@@ -72,39 +72,61 @@ app.use((req, res, next) => {
  * to allow for proper async/await handling during initialization.
  */
 (async () => {
-  // Register all API routes and get the HTTP server instance
-  const server = registerRoutes(app);
-
   /**
-   * Global error handling middleware
-   * 
-   * This middleware catches any errors thrown during request processing
-   * and returns a proper error response to the client.
+   * API_ROUTES_FIRST is a special flag used in production to ensure
+   * that API routes are registered before the catch-all static file serving.
+   * Without this, the static file serving would capture all API requests 
+   * and return the index.html instead of JSON responses.
    */
-  app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
-    // Extract status code from error object or default to 500
-    const status = err.status || err.statusCode || 500;
-    // Extract error message or use generic message
-    const message = err.message || "Internal Server Error";
-
-    // Send error response to client
-    res.status(status).json({ message });
-    throw err; // Re-throw for logging purposes
-  });
-
-  /**
-   * Frontend serving setup
-   * 
-   * In development mode, Vite handles serving the React frontend
-   * In production, static files are served from the built assets
-   * 
-   * Note: This must be set up after all API routes to avoid Vite's
-   * catch-all route from interfering with API endpoints
-   */
-  if (app.get("env") === "development") {
-    await setupVite(app, server);
+  const apiRoutesFirst = process.env.API_ROUTES_FIRST === 'true';
+  
+  let server;
+  
+  if (apiRoutesFirst || app.get("env") === "development") {
+    // Register API routes first, then serve static files
+    console.log("Registering API routes before static file serving...");
+    server = registerRoutes(app);
+    
+    /**
+     * Global error handling middleware
+     */
+    app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+      // Extract status code from error object or default to 500
+      const status = err.status || err.statusCode || 500;
+      // Extract error message or use generic message
+      const message = err.message || "Internal Server Error";
+  
+      // Send error response to client
+      res.status(status).json({ message });
+      throw err; // Re-throw for logging purposes
+    });
+    
+    /**
+     * Frontend serving setup AFTER API routes
+     */
+    if (app.get("env") === "development") {
+      await setupVite(app, server);
+    } else {
+      serveStatic(app);
+    }
   } else {
-    serveStatic(app);
+    // Legacy production mode - first static files, then API routes
+    // This is kept only for backward compatibility
+    console.log("LEGACY MODE: Static file serving before API routes (not recommended)");
+    if (app.get("env") === "development") {
+      await setupVite(app, server);
+    } else {
+      serveStatic(app);
+    }
+    
+    server = registerRoutes(app);
+    
+    app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
+      const status = err.status || err.statusCode || 500;
+      const message = err.message || "Internal Server Error";
+      res.status(status).json({ message });
+      throw err;
+    });
   }
 
   /**

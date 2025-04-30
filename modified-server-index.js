@@ -127,10 +127,16 @@ function enhancedServeStatic(app) {
   console.log(`Using static path: ${staticPath}`);
   app.use(express.static(staticPath));
   
-  // Fall through to index.html if the file doesn't exist
-  app.use("*", (_req, res) => {
+  // Fall through to index.html only for non-API routes
+  app.use("*", (req, res) => {
+    // Skip API routes - they should be handled by their own handlers
+    if (req.originalUrl.startsWith('/api')) {
+      console.log(`API request detected: ${req.originalUrl} - letting it pass through`);
+      return res.status(404).json({ message: "API endpoint not found" });
+    }
+    
     const indexPath = path.resolve(staticPath, "index.html");
-    console.log(`Serving index.html from: ${indexPath}`);
+    console.log(`Serving index.html from: ${indexPath} for route: ${req.originalUrl}`);
     
     if (fs.existsSync(indexPath)) {
       res.sendFile(indexPath);
@@ -184,7 +190,11 @@ app.use((req, res, next) => {
  */
 (async () => {
   try {
-    // Register all API routes and get the HTTP server instance
+    /**
+     * IMPORTANT: First set up API routes, then the static file serving.
+     * This is critical to ensure that API routes are handled before the catch-all route.
+     */
+    console.log('Registering API routes...');
     const server = registerRoutes(app);
 
     /**
@@ -202,14 +212,14 @@ app.use((req, res, next) => {
     });
 
     /**
-     * Frontend serving setup
+     * Frontend serving setup - must come AFTER API route registration
      */
     if (app.get("env") === "development") {
       console.log('Setting up Vite dev server');
       await setupVite(app, server);
     } else {
       console.log('Setting up production static file serving');
-      // Use enhanced static file serving for production
+      // Use enhanced static file serving for production *after* API routes are registered
       enhancedServeStatic(app);
     }
 
