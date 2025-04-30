@@ -50,17 +50,17 @@ export default function FeedPage() {
   
   if (isLoading) {
     return (
-      <div className="flex flex-col min-h-screen">
+      <div className="flex flex-col min-h-screen bg-accent">
         <MainNavigation />
         <div className="flex items-center justify-center flex-grow">
-          <Loader2 className="h-8 w-8 animate-spin" />
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       </div>
     );
   }
   
   return (
-    <div className="flex flex-col min-h-screen bg-background">
+    <div className="flex flex-col min-h-screen bg-accent">
       <MainNavigation />
       
       <main className="container mx-auto px-4 py-8 flex-grow">
@@ -75,13 +75,13 @@ export default function FeedPage() {
           </div>
         ) : (
           <div className="max-w-2xl mx-auto space-y-6">
-            <h1 className="text-2xl font-bold">Your Journey</h1>
+            <h1 className="text-2xl font-bold text-accent-foreground">Your Drops</h1>
             
             {entries.length === 0 ? (
-              <div className="text-center py-12 border rounded-lg bg-accent/20">
-                <h3 className="text-lg font-medium">No entries yet</h3>
-                <p className="text-muted-foreground mt-2">
-                  Start your journaling journey by answering today's question.
+              <div className="text-center py-12 border border-primary/30 rounded-lg bg-card text-card-foreground shadow-md">
+                <h3 className="text-lg font-medium">No drops yet</h3>
+                <p className="text-accent-foreground/80 mt-2">
+                  Start your reflection journey by answering today's question.
                 </p>
               </div>
             ) : (
@@ -89,7 +89,7 @@ export default function FeedPage() {
                 {sortedEntries.map((entry) => (
                   <div 
                     key={entry.id} 
-                    className="border rounded-lg p-6 space-y-4 hover:bg-accent/50 cursor-pointer transition-colors"
+                    className="border border-primary/30 rounded-lg p-6 space-y-4 bg-card text-card-foreground shadow-md hover:bg-primary/10 cursor-pointer transition-colors card-container"
                     onClick={() => {
                       setCurrentEntryId(entry.id);
                       setShowChat(true);

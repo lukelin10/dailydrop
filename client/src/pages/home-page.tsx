@@ -76,10 +76,10 @@ export default function HomePage() {
 
   if (entriesLoading || questionLoading) {
     return (
-      <div className="flex flex-col min-h-screen">
+      <div className="flex flex-col min-h-screen bg-accent">
         <MainNavigation />
         <div className="flex items-center justify-center flex-grow">
-          <Loader2 className="h-8 w-8 animate-spin" />
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       </div>
     );
@@ -95,13 +95,13 @@ export default function HomePage() {
   };
 
   return (
-    <div className="flex flex-col min-h-screen bg-background">
+    <div className="flex flex-col min-h-screen bg-accent">
       <MainNavigation />
       
       <main className="container mx-auto px-4 py-8 flex-grow">
         <div className="max-w-2xl mx-auto">
           <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold">Today's Drop</h1>
+            <h1 className="text-2xl font-bold text-accent-foreground">Today's Drop</h1>
             <DropCounter />
           </div>
           
@@ -117,7 +117,7 @@ export default function HomePage() {
           ) : (
             <div className="space-y-6">
               {!todayEntry ? (
-                <div className="space-y-4 border rounded-lg p-6">
+                <div className="space-y-4 border border-primary/30 rounded-lg p-6 bg-card text-card-foreground card-container shadow-md">
                   <p className="text-lg font-medium">{dailyQuestion?.question}</p>
                   <Editor
                     onSave={(answer) => createEntryMutation.mutate(answer)}
@@ -125,10 +125,10 @@ export default function HomePage() {
                   />
                 </div>
               ) : (
-                <div className="space-y-4 border rounded-lg p-6">
+                <div className="space-y-4 border border-primary/30 rounded-lg p-6 bg-card text-card-foreground card-container shadow-md">
                   <div className="flex items-center justify-between mb-2">
                     <p className="text-lg font-medium">{todayEntry.question}</p>
-                    <div className="text-sm text-muted-foreground bg-muted px-2 py-1 rounded-md">
+                    <div className="text-sm text-accent-foreground bg-secondary text-secondary-foreground px-2 py-1 rounded-md">
                       Already answered today
                     </div>
                   </div>
@@ -136,10 +136,11 @@ export default function HomePage() {
                     {todayEntry.answer}
                   </div>
                   <div className="flex flex-col gap-2">
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-accent-foreground/80">
                       You've already answered today's question. Continue the conversation with DropBot for deeper insights.
                     </p>
                     <Button 
+                      className="primary-button"
                       onClick={() => {
                         setCurrentEntryId(todayEntry.id);
                         setShowChat(true);
