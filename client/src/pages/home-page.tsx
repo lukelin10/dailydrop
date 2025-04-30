@@ -114,8 +114,8 @@ export default function HomePage() {
             <div className="space-y-6 fade-in">
               <ChatInterface
                 entryId={currentEntryId}
-                question={Array.isArray(entries) ? entries.find(e => e.id === currentEntryId)?.question || "" : ""}
-                answer={Array.isArray(entries) ? entries.find(e => e.id === currentEntryId)?.answer || "" : ""}
+                question={safeEntries.find(e => e.id === currentEntryId)?.question || ""}
+                answer={safeEntries.find(e => e.id === currentEntryId)?.answer || ""}
                 onEndChat={handleEndChat}
               />
             </div>
