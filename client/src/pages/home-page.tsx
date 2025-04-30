@@ -22,6 +22,7 @@ import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import MainNavigation from "@/components/main-navigation";
 import { useLocation } from "wouter";
+import { ensureArray } from "@/lib/utils";
 
 export default function HomePage() {
   const [showChat, setShowChat] = useState(false);
@@ -60,22 +61,23 @@ export default function HomePage() {
     },
   });
 
+  // Create a safe array from entries
+  const safeEntries = ensureArray<Entry>(entries);
+  
   // Find entry matching today's questionId instead of just today's date
-  // Ensure entries is always an array before using array methods
-  const todayEntry = Array.isArray(entries) ? entries.find(
+  const todayEntry = safeEntries.find(
     (entry) => entry.questionId === dailyQuestion?.questionId
-  ) : undefined;
+  );
   
   // On initial load, if there's an entry for today, immediately show the chat interface
   useEffect(() => {
-    // Ensure entries is an array and has elements before proceeding
-    const hasEntries = Array.isArray(entries) && entries.length > 0;
-    if (!entriesLoading && hasEntries && todayEntry) {
+    // Check if we have entries and a match for today
+    if (!entriesLoading && safeEntries.length > 0 && todayEntry) {
       // Set the entry and show chat automatically for today's entry
       setCurrentEntryId(todayEntry.id);
       setShowChat(true);
     }
-  }, [entries, entriesLoading, todayEntry]);
+  }, [safeEntries, entriesLoading, todayEntry]);
 
   if (entriesLoading || questionLoading) {
     return (

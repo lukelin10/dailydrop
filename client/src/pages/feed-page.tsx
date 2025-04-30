@@ -7,6 +7,7 @@ import { Loader2, Share2 } from "lucide-react";
 import MainNavigation from "@/components/main-navigation";
 import { Button } from "@/components/ui/button";
 import ChatInterface from "@/components/chat-interface";
+import { ensureArray } from "@/lib/utils";
 
 export default function FeedPage() {
   const { toast } = useToast();
@@ -39,7 +40,9 @@ export default function FeedPage() {
   });
   
   // Sort entries by date (newest first)
-  const sortedEntries = [...entries].sort(
+  // Ensure entries is always an array before attempting to sort it
+  const safeEntries = ensureArray<Entry>(entries);
+  const sortedEntries = [...safeEntries].sort(
     (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
   );
   
@@ -68,8 +71,8 @@ export default function FeedPage() {
           <div className="max-w-2xl mx-auto space-y-6">
             <ChatInterface
               entryId={currentEntryId}
-              question={entries.find(e => e.id === currentEntryId)?.question || ""}
-              answer={entries.find(e => e.id === currentEntryId)?.answer || ""}
+              question={safeEntries.find(e => e.id === currentEntryId)?.question || ""}
+              answer={safeEntries.find(e => e.id === currentEntryId)?.answer || ""}
               onEndChat={handleEndChat}
             />
           </div>
@@ -77,7 +80,7 @@ export default function FeedPage() {
           <div className="max-w-2xl mx-auto space-y-6">
             <h1 className="text-2xl font-bold text-accent-foreground">Your Drops</h1>
             
-            {entries.length === 0 ? (
+            {safeEntries.length === 0 ? (
               <div className="text-center py-12 border border-primary/30 rounded-lg bg-card text-card-foreground shadow-md">
                 <h3 className="text-lg font-medium">No drops yet</h3>
                 <p className="text-accent-foreground/80 mt-2">
