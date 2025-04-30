@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import MainNavigation from "@/components/main-navigation";
 import { useLocation } from "wouter";
 import { ensureArray } from "@/lib/utils";
+import { useDailyQuestion } from "@/hooks/use-daily-question";
 
 export default function HomePage() {
   const [showChat, setShowChat] = useState(false);
@@ -32,61 +33,21 @@ export default function HomePage() {
   const { data: entries = [], isLoading: entriesLoading } = useQuery<Entry[]>({
     queryKey: ["/api/entries"]
   });
-
-  const { data: dailyQuestion, isLoading: questionLoading } = useQuery<{
-    question: string;
-    questionId: number;
-  }>({
-    queryKey: ["/api/question"],
-  });
-
-  // We'll implement our own question fetching logic
-  const [directQuestion, setDirectQuestion] = useState<string | null>(null);
   
-  // Directly fetch the question from the API to bypass any React Query caching issues
+  // Use our custom hook to manage fetching the daily question reliably
+  const { question, questionId, loading: questionLoading } = useDailyQuestion();
+  
+  // Log the question data received from our hook
   useEffect(() => {
-    async function fetchQuestion() {
-      try {
-        console.log("Starting direct fetch of question...");
-        const response = await fetch('/api/question', {
-          credentials: 'include'
-        });
-        
-        console.log("Direct fetch response:", response.status, response.statusText);
-        
-        if (response.ok) {
-          const data = await response.json();
-          console.log("Direct fetch question data:", data);
-          
-          if (data && data.question) {
-            console.log("Setting direct question to:", data.question);
-            setDirectQuestion(data.question);
-          } else {
-            console.warn("Question data missing or invalid:", data);
-          }
-        } else {
-          console.error("Failed to fetch question:", response.status, response.statusText);
-        }
-      } catch (err) {
-        console.error('Error fetching question directly:', err);
-      }
-    }
-    
-    fetchQuestion();
-  }, []);
+    console.log("Question from custom hook:", { question, questionId });
+  }, [question, questionId]);
 
   const createEntryMutation = useMutation({
     mutationFn: async (answer: string) => {
-      // Use directQuestion or from dailyQuestion object
-      const questionToUse = directQuestion || 
-                           (dailyQuestion && typeof dailyQuestion === 'object' && 'question' in dailyQuestion
-                            ? dailyQuestion.question
-                            : "Today's question");
-      
+      // Use question data from our custom hook
       const data = {
-        question: questionToUse,
-        questionId: (dailyQuestion && typeof dailyQuestion === 'object' && 'questionId' in dailyQuestion) 
-                    ? dailyQuestion.questionId : 1,
+        question: question || "Today's question",
+        questionId: questionId || 1,
         answer,
         date: new Date(),
       };
@@ -111,13 +72,9 @@ export default function HomePage() {
   const safeEntries = ensureArray<Entry>(entries);
   
   // Find entry matching today's questionId instead of just today's date
-  // Use a safer check that works even if the data structure is corrupted in production
+  // Use our custom hook's questionId which handles all edge cases
   const todayEntry = safeEntries.find((entry) => {
-    const currentQuestionId = (dailyQuestion && typeof dailyQuestion === 'object' && 'questionId' in dailyQuestion) 
-      ? dailyQuestion.questionId 
-      : null;
-      
-    return entry.questionId === currentQuestionId;
+    return entry.questionId === questionId;
   });
   
   // On initial load, if there's an entry for today, immediately show the chat interface
@@ -151,7 +108,8 @@ export default function HomePage() {
   };
 
   console.log("Rendering home page with:", {
-    dailyQuestion,
+    question,
+    questionId,
     todayEntry,
     showChat,
     currentEntryId
@@ -182,10 +140,7 @@ export default function HomePage() {
               {!todayEntry ? (
                 <div className="space-y-4 rounded-lg p-6 bg-card text-card-foreground card-container">
                   <p className="text-lg font-medium text-accent-foreground">
-                    {directQuestion || 
-                     (dailyQuestion && typeof dailyQuestion === 'object' && 'question' in dailyQuestion ? 
-                      dailyQuestion.question : 
-                      "Today's question is loading...")}
+                    {question || "Today's question is loading..."}
                   </p>
                   <Editor
                     onSave={(answer) => createEntryMutation.mutate(answer)}
