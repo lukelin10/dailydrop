@@ -1,21 +1,21 @@
 :root {
-  /* Primary Color: Soft Terracotta */
+  /* Primary Color: Soft Terracotta (#D27D52) */
   --primary: 20 45% 57%;
   --primary-foreground: 0 0% 98%;
   
-  /* Secondary Color: Deep Olive */
+  /* Secondary Color: Deep Olive (#556B2F) */
   --secondary: 82 40% 30%;
   --secondary-foreground: 0 0% 98%;
   
-  /* Accent Color: Warm Cream */
+  /* Accent Color: Warm Cream (#F5EFE6) */
   --accent: 37 35% 93%;
   --accent-foreground: 20 10% 20%;
   
-  /* Background Color: Rich Chestnut */
+  /* Background Color: Rich Chestnut (#3B2E2A) */
   --background: 17 16% 20%;
   --foreground: 0 0% 18%;
   
-  /* Text Color: Charcoal Black */
+  /* Text Color: Charcoal Black (#2D2D2D) */
   --foreground: 0 0% 18%;
   
   /* Derived colors for UI components */
@@ -88,4 +88,75 @@ body {
   background-color: hsl(37, 35%, 93%) !important; /* Warm Cream */
   color: hsl(0, 0%, 18%) !important; /* Charcoal Black */
   border: 1px solid hsl(20, 25%, 40%) !important;
+}
+
+/* Text styling */
+h1, h2, h3, h4, h5, h6 {
+  color: hsl(20, 45%, 57%) !important; /* Soft Terracotta */
+}
+
+/* Form elements */
+input, textarea, select {
+  background-color: hsl(37, 35%, 93%) !important; /* Warm Cream */
+  color: hsl(0, 0%, 18%) !important; /* Charcoal Black */
+  border-color: hsl(20, 25%, 40%) !important;
+}
+
+input:focus, textarea:focus, select:focus {
+  border-color: hsl(20, 45%, 57%) !important; /* Soft Terracotta */
+  outline-color: hsl(20, 45%, 57%) !important; /* Soft Terracotta */
+}
+
+/* Links */
+a {
+  color: hsl(20, 45%, 57%) !important; /* Soft Terracotta */
+}
+
+a:hover {
+  color: hsl(82, 40%, 30%) !important; /* Deep Olive */
+}
+
+/* Badge/Tag elements */
+.badge, .tag {
+  background-color: hsl(82, 40%, 30%) !important; /* Deep Olive */
+  color: hsl(37, 35%, 93%) !important; /* Warm Cream */
+}
+
+/* Hover effects */
+.hover-effect:hover {
+  background-color: hsl(20, 45%, 57%, 0.1) !important; /* Soft Terracotta with opacity */
+  transition: background-color 0.3s ease;
+}
+
+/* Utility classes */
+.text-terracotta {
+  color: hsl(20, 45%, 57%) !important; /* Soft Terracotta */
+}
+
+.text-olive {
+  color: hsl(82, 40%, 30%) !important; /* Deep Olive */
+}
+
+.text-cream {
+  color: hsl(37, 35%, 93%) !important; /* Warm Cream */
+}
+
+.text-chestnut {
+  color: hsl(17, 16%, 20%) !important; /* Rich Chestnut */
+}
+
+.bg-terracotta {
+  background-color: hsl(20, 45%, 57%) !important; /* Soft Terracotta */
+}
+
+.bg-olive {
+  background-color: hsl(82, 40%, 30%) !important; /* Deep Olive */
+}
+
+.bg-cream {
+  background-color: hsl(37, 35%, 93%) !important; /* Warm Cream */
+}
+
+.bg-chestnut {
+  background-color: hsl(17, 16%, 20%) !important; /* Rich Chestnut */
 }

@@ -18,29 +18,29 @@ export default function SeekPage() {
   
   if (isLoading) {
     return (
-      <div className="flex flex-col min-h-screen">
+      <div className="flex flex-col min-h-screen bg-accent">
         <MainNavigation />
         <div className="flex items-center justify-center flex-grow">
-          <Loader2 className="h-8 w-8 animate-spin" />
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
         </div>
       </div>
     );
   }
   
   return (
-    <div className="flex flex-col min-h-screen bg-background">
+    <div className="flex flex-col min-h-screen bg-accent">
       <MainNavigation />
       
       <main className="container mx-auto px-4 py-8 flex-grow">
         <div className="max-w-3xl mx-auto space-y-6">
-          <h1 className="text-2xl font-bold">Your Insights</h1>
+          <h1 className="text-2xl font-bold text-accent-foreground">Your Insights</h1>
           
           {analyses.length === 0 ? (
-            <div className="text-center py-12 border rounded-lg bg-accent/20">
-              <h3 className="text-lg font-medium">No analyses yet</h3>
-              <p className="text-muted-foreground mt-2">
+            <div className="text-center py-12 border border-primary/30 rounded-lg bg-card text-card-foreground shadow-md">
+              <h3 className="text-lg font-medium">No insights yet</h3>
+              <p className="text-accent-foreground/80 mt-2">
                 Keep journaling! Once you have at least 7 unanalyzed entries, 
-                you can generate your first analysis.
+                you can generate your first insight analysis.
               </p>
             </div>
           ) : (
@@ -67,22 +67,22 @@ function AnalysisCard({ analysis }: AnalysisCardProps) {
   return (
     <Link 
       href={`/analysis/${analysis.id}`}
-      className="block border rounded-lg p-6 hover:bg-accent/20 transition-colors cursor-pointer"
+      className="block border border-primary/30 rounded-lg p-6 bg-card text-card-foreground shadow-md hover:bg-primary/10 transition-colors cursor-pointer card-container"
     >
       <div className="space-y-3">
         <div className="flex justify-between items-start">
           <div>
-            <h3 className="font-medium">Analysis from {timeAgo}</h3>
-            <div className="text-sm text-muted-foreground">
+            <h3 className="font-medium text-primary">Analysis from {timeAgo}</h3>
+            <div className="text-sm text-accent-foreground/80">
               Based on {analysis.entryCount} journal entries
             </div>
           </div>
-          <div className="bg-primary/10 text-primary text-xs px-3 py-1 rounded-full">
+          <div className="bg-secondary text-secondary-foreground text-xs px-3 py-1 rounded-full">
             Insight
           </div>
         </div>
         
-        <p className="text-sm">
+        <p className="text-sm text-accent-foreground">
           {summary}
         </p>
       </div>
