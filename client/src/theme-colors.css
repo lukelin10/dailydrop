@@ -284,6 +284,15 @@ a:hover {
   box-shadow: 0 6px 10px -3px rgba(210, 125, 82, 0.2), 0 4px 6px -2px rgba(210, 125, 82, 0.1);
 }
 
+/* Chat header text styling */
+.bg-primary h2, 
+.bg-primary p, 
+.bg-secondary h2, 
+.bg-secondary p {
+  color: white !important;
+  fill: white !important;
+}
+
 /* Micro-interactions and animations */
 .fade-in {
   animation: fadeIn 0.5s ease forwards;

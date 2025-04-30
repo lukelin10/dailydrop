@@ -93,15 +93,15 @@ export default function ChatInterface({ entryId, question, answer, onEndChat }: 
   return (
     <div className="flex flex-col h-[600px] border rounded-lg bg-accent text-accent-foreground">
       <div className="p-4 border-b bg-primary">
-        <h2 className="text-lg font-bold text-white" style={{color: 'white !important', textShadow: '0 1px 2px rgba(0,0,0,0.5)'}}>Chat with DropBot</h2>
-        <p className="text-sm text-white font-medium" style={{color: 'white !important', textShadow: '0 1px 2px rgba(0,0,0,0.5)'}}>
+        <h2 className="text-lg font-bold" style={{color: 'white !important'}}>Chat with DropBot</h2>
+        <p className="text-sm font-medium" style={{color: 'white !important'}}>
           Let's reflect on your thoughts about today's drop together
         </p>
       </div>
 
       <div className="p-4 border-b bg-secondary sticky top-0">
-        <p className="text-sm font-bold text-white" style={{color: 'white !important', textShadow: '0 1px 2px rgba(0,0,0,0.5)'}}>Today's Question:</p>
-        <p className="text-sm text-white font-medium" style={{color: 'white !important', textShadow: '0 1px 2px rgba(0,0,0,0.5)'}}>{question}</p>
+        <p className="text-sm font-bold" style={{color: 'white !important'}}>Today's Question:</p>
+        <p className="text-sm font-medium" style={{color: 'white !important'}}>{question}</p>
       </div>
 
       <ScrollArea className="flex-1 p-4">
