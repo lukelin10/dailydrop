@@ -40,21 +40,36 @@ export default function HomePage() {
     queryKey: ["/api/question"],
   });
 
-  // Log question data after fetching
+  // Create a fallback question in case the data structure is corrupted in production
+  const questionText = typeof dailyQuestion === 'object' && dailyQuestion !== null && 'question' in dailyQuestion
+    ? String(dailyQuestion.question)
+    : "What's on your mind today?";
+
+  // Log question data for debugging
   useEffect(() => {
-    if (dailyQuestion) {
-      console.log("Daily question fetched successfully:", dailyQuestion);
-    }
-  }, [dailyQuestion]);
+    console.log("Daily question state:", {
+      dailyQuestion,
+      questionText,
+      rawData: JSON.stringify(dailyQuestion),
+      type: typeof dailyQuestion,
+      hasQuestion: dailyQuestion && typeof dailyQuestion === 'object' && 'question' in dailyQuestion
+    });
+  }, [dailyQuestion, questionText]);
 
   const createEntryMutation = useMutation({
     mutationFn: async (answer: string) => {
+      // Use questionText fallback for question and default the questionId if needed
       const data = {
-        question: dailyQuestion?.question,
-        questionId: dailyQuestion?.questionId,
+        question: questionText,
+        questionId: (dailyQuestion && typeof dailyQuestion === 'object' && 'questionId' in dailyQuestion) 
+                    ? dailyQuestion.questionId : 1,
         answer,
         date: new Date(),
       };
+      
+      // Log what we're about to send
+      console.log("Creating entry with data:", data);
+      
       const entry = await apiRequest<Entry>("/api/entries", {
         method: "POST",
         body: data
@@ -72,9 +87,14 @@ export default function HomePage() {
   const safeEntries = ensureArray<Entry>(entries);
   
   // Find entry matching today's questionId instead of just today's date
-  const todayEntry = safeEntries.find(
-    (entry) => entry.questionId === dailyQuestion?.questionId
-  );
+  // Use a safer check that works even if the data structure is corrupted in production
+  const todayEntry = safeEntries.find((entry) => {
+    const currentQuestionId = (dailyQuestion && typeof dailyQuestion === 'object' && 'questionId' in dailyQuestion) 
+      ? dailyQuestion.questionId 
+      : null;
+      
+    return entry.questionId === currentQuestionId;
+  });
   
   // On initial load, if there's an entry for today, immediately show the chat interface
   useEffect(() => {
@@ -137,15 +157,9 @@ export default function HomePage() {
             <div className="space-y-6 slide-up">
               {!todayEntry ? (
                 <div className="space-y-4 rounded-lg p-6 bg-card text-card-foreground card-container">
-                  {dailyQuestion?.question ? (
-                    <p className="text-lg font-medium text-accent-foreground">
-                      {dailyQuestion.question}
-                    </p>
-                  ) : (
-                    <p className="text-lg font-medium text-accent-foreground">
-                      Loading today's question...
-                    </p>
-                  )}
+                  <p className="text-lg font-medium text-accent-foreground">
+                    {questionText}
+                  </p>
                   <Editor
                     onSave={(answer) => createEntryMutation.mutate(answer)}
                     loading={createEntryMutation.isPending}
