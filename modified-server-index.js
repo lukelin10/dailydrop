@@ -3,6 +3,10 @@
  * 
  * This file extends the original server/index.ts with additional
  * debugging and path fixing capabilities for production.
+ * 
+ * CRITICAL FIX:
+ * - Ensures API routes are properly handled and not served as static HTML
+ * - API routes should be registered before the catch-all static route
  */
 import express from "express";
 import { registerRoutes } from "./server/routes.js";
@@ -128,9 +132,16 @@ function enhancedServeStatic(app) {
   app.use(express.static(staticPath));
   
   // Fall through to index.html if the file doesn't exist
-  app.use("*", (_req, res) => {
+  // IMPORTANT: Skip API routes to prevent them from being caught by this catchall
+  app.use("*", (req, res, next) => {
+    // Skip API routes - they should be handled by their own handlers
+    if (req.originalUrl.startsWith('/api/')) {
+      console.log(`[CRITICAL FIX] Skipping SPA catchall for API route: ${req.originalUrl}`);
+      return next();
+    }
+
     const indexPath = path.resolve(staticPath, "index.html");
-    console.log(`Serving index.html from: ${indexPath}`);
+    console.log(`Serving index.html from: ${indexPath} for URL: ${req.originalUrl}`);
     
     if (fs.existsSync(indexPath)) {
       res.sendFile(indexPath);
