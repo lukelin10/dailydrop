@@ -3,6 +3,7 @@ import { Entry } from "@shared/schema";
 import { useParams } from "wouter";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
+import { ensureArray } from "@/lib/utils";
 
 export default function SharedEntryPage() {
   const { shareId } = useParams();

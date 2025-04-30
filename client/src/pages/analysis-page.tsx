@@ -6,6 +6,7 @@ import { Separator } from "@/components/ui/separator";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import MainNavigation from "@/components/main-navigation";
+import { ensureArray } from "@/lib/utils";
 
 export default function AnalysisPage() {
   const { id } = useParams<{ id: string }>();
@@ -70,7 +71,7 @@ export default function AnalysisPage() {
           <Separator />
           
           <div className="prose prose-sm max-w-none">
-            {analysis.content.split('\n').map((paragraph, i) => (
+            {analysis.content && analysis.content.split('\n').map((paragraph, i) => (
               <p key={i}>{paragraph}</p>
             ))}
           </div>
