@@ -31,10 +31,10 @@ export default function MainNavigation() {
   ];
 
   return (
-    <header className="border-b sticky top-0 bg-background z-10">
+    <header className="border-b sticky top-0 bg-accent z-10">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
         <div className="flex items-center">
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-purple-600 bg-clip-text text-transparent mr-8">
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mr-8">
             MindDrop
           </h1>
           <nav className="hidden md:flex space-x-1">
@@ -45,8 +45,8 @@ export default function MainNavigation() {
                 className={cn(
                   "px-4 py-2 rounded-md flex items-center text-sm font-medium transition-colors",
                   location === item.path
-                    ? "bg-primary/10 text-primary"
-                    : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                    ? "bg-primary text-primary-foreground"
+                    : "text-secondary hover:bg-secondary hover:text-secondary-foreground",
                 )}
               >
                 {item.icon}
@@ -65,8 +65,8 @@ export default function MainNavigation() {
               className={cn(
                 "w-12 h-12 flex flex-col items-center justify-center rounded-md text-xs font-medium transition-colors",
                 location === item.path
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
+                  ? "bg-primary text-primary-foreground"
+                  : "text-secondary hover:bg-secondary hover:text-secondary-foreground",
               )}
             >
               {item.icon}

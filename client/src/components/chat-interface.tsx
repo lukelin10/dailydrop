@@ -91,17 +91,17 @@ export default function ChatInterface({ entryId, question, answer, onEndChat }: 
   });
 
   return (
-    <div className="flex flex-col h-[600px] border rounded-lg">
-      <div className="p-4 border-b">
+    <div className="flex flex-col h-[600px] border rounded-lg bg-accent text-accent-foreground">
+      <div className="p-4 border-b bg-primary text-primary-foreground">
         <h2 className="text-lg font-semibold">Chat with DropBot</h2>
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm opacity-90">
           Let's reflect on your thoughts about today's drop together
         </p>
       </div>
 
-      <div className="p-4 border-b bg-muted/50 sticky top-0">
+      <div className="p-4 border-b bg-secondary/80 text-secondary-foreground sticky top-0">
         <p className="text-sm font-medium">Today's Question:</p>
-        <p className="text-sm text-muted-foreground">{question}</p>
+        <p className="text-sm opacity-90">{question}</p>
       </div>
 
       <ScrollArea className="flex-1 p-4">
@@ -121,8 +121,8 @@ export default function ChatInterface({ entryId, question, answer, onEndChat }: 
                 <div
                   className={`max-w-[80%] rounded-lg p-3 ${
                     message.isBot
-                      ? "bg-muted"
-                      : "bg-primary text-primary-foreground"
+                      ? "bg-secondary text-secondary-foreground bot-message"
+                      : "bg-primary text-primary-foreground user-message"
                   }`}
                 >
                   <p className="text-sm whitespace-pre-wrap">{message.content}</p>

@@ -15,12 +15,12 @@ export default function Editor({ onSave, loading }: EditorProps) {
     <div className="space-y-4">
       <Textarea
         placeholder="Write your thoughts..."
-        className="min-h-[200px]"
+        className="min-h-[200px] bg-accent text-accent-foreground border-primary/30 focus:border-primary"
         value={content}
         onChange={(e) => setContent(e.target.value)}
       />
       <Button
-        className="w-full"
+        className="w-full primary-button"
         onClick={() => onSave(content)}
         disabled={loading || !content.trim()}
       >
