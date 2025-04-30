@@ -1,0 +1,91 @@
+:root {
+  /* Primary Color: Soft Terracotta */
+  --primary: 20 45% 57%;
+  --primary-foreground: 0 0% 98%;
+  
+  /* Secondary Color: Deep Olive */
+  --secondary: 82 40% 30%;
+  --secondary-foreground: 0 0% 98%;
+  
+  /* Accent Color: Warm Cream */
+  --accent: 37 35% 93%;
+  --accent-foreground: 20 10% 20%;
+  
+  /* Background Color: Rich Chestnut */
+  --background: 17 16% 20%;
+  --foreground: 0 0% 18%;
+  
+  /* Text Color: Charcoal Black */
+  --foreground: 0 0% 18%;
+  
+  /* Derived colors for UI components */
+  --card: 37 35% 93%;
+  --card-foreground: 0 0% 18%;
+  
+  --popover: 37 35% 93%;
+  --popover-foreground: 0 0% 18%;
+  
+  --muted: 17 16% 30%;
+  --muted-foreground: 37 35% 93%;
+  
+  --border: 20 25% 40%;
+  --input: 17 16% 30%;
+  --ring: 20 45% 57%;
+  
+  --destructive: 0 70% 50%;
+  --destructive-foreground: 37 35% 93%;
+  
+  /* Chart colors */
+  --chart-1: 20 45% 57%;
+  --chart-2: 82 40% 30%;
+  --chart-3: 37 35% 93%;
+  --chart-4: 17 16% 20%;
+  --chart-5: 0 0% 18%;
+  
+  /* Sidebar colors */
+  --sidebar-background: 17 16% 20%;
+  --sidebar-foreground: 37 35% 93%;
+  --sidebar-primary: 20 45% 57%;
+  --sidebar-primary-foreground: 0 0% 98%;
+  --sidebar-accent: 82 40% 30%;
+  --sidebar-accent-foreground: 37 35% 93%;
+  --sidebar-border: 20 25% 40%;
+  --sidebar-ring: 20 45% 57%;
+}
+
+/* Light theme body background override */
+body {
+  background-color: hsl(37, 35%, 93%); /* Warm Cream */
+  color: hsl(0, 0%, 18%); /* Charcoal Black */
+}
+
+/* Chat message bubbles - user */
+.user-message {
+  background-color: hsl(20, 45%, 57%) !important; /* Soft Terracotta */
+  color: hsl(0, 0%, 98%) !important;
+}
+
+/* Chat message bubbles - bot */
+.bot-message {
+  background-color: hsl(82, 40%, 30%) !important; /* Deep Olive */
+  color: hsl(37, 35%, 93%) !important; /* Warm Cream */
+}
+
+/* Primary buttons */
+.primary-button {
+  background-color: hsl(20, 45%, 57%) !important; /* Soft Terracotta */
+  color: hsl(0, 0%, 98%) !important;
+}
+
+/* Secondary buttons */
+.secondary-button {
+  background-color: hsl(82, 40%, 30%) !important; /* Deep Olive */
+  color: hsl(37, 35%, 93%) !important; /* Warm Cream */
+}
+
+/* Cards and containers */
+.card-container {
+  background-color: hsl(37, 35%, 93%) !important; /* Warm Cream */
+  color: hsl(0, 0%, 18%) !important; /* Charcoal Black */
+  border: 1px solid hsl(20, 25%, 40%) !important;
+}
