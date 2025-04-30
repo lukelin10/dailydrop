@@ -165,7 +165,7 @@ export default function ChatInterface({ entryId, question, answer, onEndChat }: 
                 size="sm"
                 onClick={handleEndChat}
                 disabled={isChatEnded}
-                className="border-primary/30 hover:bg-primary/10 text-accent-foreground"
+                className="border-primary/30 hover:bg-primary/10 text-foreground font-semibold border-2 border-primary"
               >
                 End Chat
               </Button>
@@ -186,7 +186,7 @@ export default function ChatInterface({ entryId, question, answer, onEndChat }: 
                 size="sm"
                 onClick={handleEndChat}
                 disabled={isChatEnded}
-                className="border-primary/30 hover:bg-primary/10 text-accent-foreground primary-button"
+                className="border-primary hover:bg-primary/20 text-foreground font-semibold border-2"
               >
                 End Chat
               </Button>

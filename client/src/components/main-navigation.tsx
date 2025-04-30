@@ -46,7 +46,7 @@ export default function MainNavigation() {
                   "px-4 py-2 rounded-md flex items-center text-sm font-medium transition-colors",
                   location === item.path
                     ? "bg-primary text-white active-nav-item" 
-                    : "text-secondary hover:bg-secondary/20 hover:text-primary",
+                    : "text-foreground font-medium hover:bg-secondary/20 hover:text-primary",
                 )}
               >
                 {item.icon}
@@ -66,7 +66,7 @@ export default function MainNavigation() {
                 "w-12 h-12 flex flex-col items-center justify-center rounded-md text-xs font-medium transition-colors",
                 location === item.path
                   ? "bg-primary text-white active-nav-item"
-                  : "text-secondary hover:bg-secondary/20 hover:text-primary",
+                  : "text-foreground font-medium hover:bg-secondary/20 hover:text-primary",
               )}
             >
               {item.icon}
@@ -81,7 +81,7 @@ export default function MainNavigation() {
             size="icon"
             onClick={() => logoutMutation.mutate()}
             title="Logout"
-            className="hover:bg-primary/10 text-secondary hover:text-primary transition-colors"
+            className="hover:bg-primary/10 text-foreground hover:text-primary transition-colors"
           >
             <LogOut className="h-4 w-4" />
           </Button>
