@@ -31,7 +31,7 @@ export default function MainNavigation() {
   ];
 
   return (
-    <header className="border-b sticky top-0 bg-accent z-10">
+    <header className="border-b border-primary/30 sticky top-0 bg-accent shadow-sm z-10">
       <div className="container mx-auto px-4 py-4 flex justify-between items-center">
         <div className="flex items-center">
           <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent mr-8">
@@ -81,6 +81,7 @@ export default function MainNavigation() {
             size="icon"
             onClick={() => logoutMutation.mutate()}
             title="Logout"
+            className="hover:bg-primary/10 text-secondary hover:text-primary transition-colors"
           >
             <LogOut className="h-4 w-4" />
           </Button>

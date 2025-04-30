@@ -160,3 +160,32 @@ a:hover {
 .bg-chestnut {
   background-color: hsl(17, 16%, 20%) !important; /* Rich Chestnut */
 }
+
+/* Enhanced prose styling for journal entries */
+.prose {
+  color: hsl(0, 0%, 18%) !important; /* Charcoal Black */
+}
+
+.prose a {
+  color: hsl(20, 45%, 57%) !important; /* Soft Terracotta */
+  text-decoration: underline;
+}
+
+.prose strong {
+  color: hsl(17, 16%, 20%) !important; /* Rich Chestnut */
+  font-weight: 600;
+}
+
+.prose blockquote {
+  border-left-color: hsl(20, 45%, 57%) !important; /* Soft Terracotta */
+  color: hsl(82, 40%, 30%) !important; /* Deep Olive */
+}
+
+/* Box shadows for card elements */
+.card-shadow {
+  box-shadow: 0 4px 6px -1px rgba(210, 125, 82, 0.1), 0 2px 4px -1px rgba(210, 125, 82, 0.06);
+}
+
+.card-shadow-md {
+  box-shadow: 0 6px 10px -3px rgba(210, 125, 82, 0.2), 0 4px 6px -2px rgba(210, 125, 82, 0.1);
+}

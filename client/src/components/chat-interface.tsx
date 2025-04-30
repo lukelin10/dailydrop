@@ -143,7 +143,7 @@ export default function ChatInterface({ entryId, question, answer, onEndChat }: 
             <Textarea
               {...form.register("message")}
               placeholder="Type your message..."
-              className="min-h-[80px]"
+              className="min-h-[80px] bg-accent text-accent-foreground border-primary/30 focus:border-primary"
               disabled={isChatEnded}
             />
             <div className="flex flex-col gap-2">
@@ -151,6 +151,7 @@ export default function ChatInterface({ entryId, question, answer, onEndChat }: 
                 type="submit"
                 size="icon"
                 disabled={isChatEnded || sendMessageMutation.isPending}
+                className="primary-button"
               >
                 {sendMessageMutation.isPending ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -164,6 +165,7 @@ export default function ChatInterface({ entryId, question, answer, onEndChat }: 
                 size="sm"
                 onClick={handleEndChat}
                 disabled={isChatEnded}
+                className="border-primary/30 hover:bg-primary/10 text-accent-foreground"
               >
                 End Chat
               </Button>
@@ -171,10 +173,10 @@ export default function ChatInterface({ entryId, question, answer, onEndChat }: 
           </form>
         ) : (
           <div className="space-y-4">
-            <p className="text-sm text-muted-foreground text-center">
+            <p className="text-sm text-accent-foreground/80 text-center">
               You've reached the limit of 7 messages in this conversation
             </p>
-            <p className="text-xs text-muted-foreground text-center">
+            <p className="text-xs text-accent-foreground/70 text-center">
               Return tomorrow for a new question and conversation
             </p>
             <div className="flex justify-center">
@@ -184,6 +186,7 @@ export default function ChatInterface({ entryId, question, answer, onEndChat }: 
                 size="sm"
                 onClick={handleEndChat}
                 disabled={isChatEnded}
+                className="border-primary/30 hover:bg-primary/10 text-accent-foreground primary-button"
               >
                 End Chat
               </Button>
