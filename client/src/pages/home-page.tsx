@@ -61,13 +61,16 @@ export default function HomePage() {
   });
 
   // Find entry matching today's questionId instead of just today's date
-  const todayEntry = entries.find(
+  // Ensure entries is always an array before using array methods
+  const todayEntry = Array.isArray(entries) ? entries.find(
     (entry) => entry.questionId === dailyQuestion?.questionId
-  );
+  ) : undefined;
   
   // On initial load, if there's an entry for today, immediately show the chat interface
   useEffect(() => {
-    if (!entriesLoading && entries.length > 0 && todayEntry) {
+    // Ensure entries is an array and has elements before proceeding
+    const hasEntries = Array.isArray(entries) && entries.length > 0;
+    if (!entriesLoading && hasEntries && todayEntry) {
       // Set the entry and show chat automatically for today's entry
       setCurrentEntryId(todayEntry.id);
       setShowChat(true);
@@ -109,8 +112,8 @@ export default function HomePage() {
             <div className="space-y-6 fade-in">
               <ChatInterface
                 entryId={currentEntryId}
-                question={entries.find(e => e.id === currentEntryId)?.question || ""}
-                answer={entries.find(e => e.id === currentEntryId)?.answer || ""}
+                question={Array.isArray(entries) ? entries.find(e => e.id === currentEntryId)?.question || "" : ""}
+                answer={Array.isArray(entries) ? entries.find(e => e.id === currentEntryId)?.answer || "" : ""}
                 onEndChat={handleEndChat}
               />
             </div>
