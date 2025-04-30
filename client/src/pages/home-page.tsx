@@ -45,7 +45,7 @@ export default function HomePage() {
   });
   
   // Use our custom hook to manage fetching the daily question reliably
-  const { question, questionId, loading: questionLoading } = useDailyQuestion();
+  const { question, questionId, loading: questionLoading, error: questionError } = useDailyQuestion();
   
   // Log the question data received from our hook
   useEffect(() => {
@@ -56,7 +56,7 @@ export default function HomePage() {
     mutationFn: async (answer: string) => {
       // Use question data from our custom hook
       const data = {
-        question: question || "Today's question",
+        question: question || (questionError ? "What's on your mind today?" : "Today's question"),
         questionId: questionId || 1,
         answer,
         date: new Date(),
@@ -149,9 +149,25 @@ export default function HomePage() {
             <div className="space-y-6 slide-up">
               {!todayEntry ? (
                 <div className="space-y-4 rounded-lg p-6 bg-card text-card-foreground card-container">
-                  <p className="text-lg font-medium text-accent-foreground">
-                    {question || "Today's question is loading..."}
-                  </p>
+                  {questionError ? (
+                    <>
+                      <div className="mb-4 p-3 border border-destructive rounded-md bg-destructive/10">
+                        <p className="text-sm font-medium text-destructive">
+                          Error loading today's question. Please try again later.
+                        </p>
+                        <p className="text-xs text-destructive/80 mt-1">
+                          {questionError.message}
+                        </p>
+                      </div>
+                      <p className="text-lg font-medium text-accent-foreground">
+                        What's on your mind today?
+                      </p>
+                    </>
+                  ) : (
+                    <p className="text-lg font-medium text-accent-foreground">
+                      {question || "Today's question is loading..."}
+                    </p>
+                  )}
                   <Editor
                     onSave={(answer) => createEntryMutation.mutate(answer)}
                     loading={createEntryMutation.isPending}
