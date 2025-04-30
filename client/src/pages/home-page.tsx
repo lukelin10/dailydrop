@@ -40,6 +40,13 @@ export default function HomePage() {
     queryKey: ["/api/question"],
   });
 
+  // Log question data after fetching
+  useEffect(() => {
+    if (dailyQuestion) {
+      console.log("Daily question fetched successfully:", dailyQuestion);
+    }
+  }, [dailyQuestion]);
+
   const createEntryMutation = useMutation({
     mutationFn: async (answer: string) => {
       const data = {
@@ -98,6 +105,13 @@ export default function HomePage() {
     // Navigate to the feed page
     setLocation("/feed");
   };
+
+  console.log("Rendering home page with:", {
+    dailyQuestion,
+    todayEntry,
+    showChat,
+    currentEntryId
+  });
 
   return (
     <div className="flex flex-col min-h-screen bg-accent">
