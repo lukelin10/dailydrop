@@ -42,9 +42,16 @@ export function useDailyQuestion() {
         try {
           setLoading(true);
           console.log("🔍 Direct fetch starting...");
-          const response = await fetch('/api/question', {
+          
+          // In production, include the full absolute URL to bypass potential routing issues
+          const baseUrl = window.location.origin;
+          const url = baseUrl + '/api/question';
+          console.log("📡 Using absolute URL:", url);
+          
+          const response = await fetch(url, {
             credentials: 'include',
             headers: {
+              'Accept': 'application/json',
               'Cache-Control': 'no-cache',
               'Pragma': 'no-cache'
             }
