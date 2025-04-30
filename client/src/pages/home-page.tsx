@@ -30,6 +30,16 @@ export default function HomePage() {
   const [currentEntryId, setCurrentEntryId] = useState<number | null>(null);
   const [, setLocation] = useLocation();
 
+  // Remove previous React Query approach for question
+  const { data: dailyQuestion } = useQuery<{
+    question: string;
+    questionId: number;
+  }>({
+    queryKey: ["/api/question"],
+    // This query is only kept for backward compatibility - our custom hook is doing the actual work
+    enabled: false // Disable this query as we're using our custom hook
+  });
+
   const { data: entries = [], isLoading: entriesLoading } = useQuery<Entry[]>({
     queryKey: ["/api/entries"]
   });

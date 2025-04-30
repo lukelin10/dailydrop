@@ -41,30 +41,60 @@ export function useDailyQuestion() {
       const fetchQuestion = async () => {
         try {
           setLoading(true);
+          console.log("🔍 Direct fetch starting...");
           const response = await fetch('/api/question', {
-            credentials: 'include'
+            credentials: 'include',
+            headers: {
+              'Cache-Control': 'no-cache',
+              'Pragma': 'no-cache'
+            }
           });
           
           if (!response.ok) {
             throw new Error(`Failed to fetch question: ${response.status} ${response.statusText}`);
           }
           
-          const data = await response.json();
-          if (data && data.question && data.questionId) {
+          const text = await response.text(); // First get as text for debugging
+          console.log("📡 Raw API response:", text);
+          
+          let data;
+          try {
+            data = JSON.parse(text);
+          } catch (e) {
+            console.error("❌ JSON parse error:", e);
+            throw new Error('Invalid JSON response');
+          }
+          
+          console.log("📝 Parsed data:", data);
+          
+          if (data && typeof data.question === 'string' && typeof data.questionId === 'number') {
+            console.log("✅ Setting question from direct fetch:", data.question);
             setQuestion(data.question);
             setQuestionId(data.questionId);
           } else {
-            throw new Error('Question data is missing required fields');
+            console.warn("⚠️ Data format issue:", data);
+            throw new Error('Question data is missing required fields or has incorrect types');
           }
         } catch (err) {
-          console.error('Error in direct fetch:', err);
+          console.error('❌ Error in direct fetch:', err);
           setError(err instanceof Error ? err : new Error('Unknown error in fetch'));
         } finally {
           setLoading(false);
         }
       };
       
+      // Execute immediately
       fetchQuestion();
+      
+      // Also set a timeout as a last resort
+      const timeoutId = setTimeout(() => {
+        if (!question) {
+          console.log("⏱️ Timeout reached, retrying direct fetch");
+          fetchQuestion();
+        }
+      }, 1500);
+      
+      return () => clearTimeout(timeoutId);
     }
   }, [queryResult.data, question]);
 
