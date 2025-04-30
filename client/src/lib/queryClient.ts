@@ -41,14 +41,9 @@ export async function apiRequest<T>(
       throw new Error("Invalid URL for API request");
     }
     
-    // Use absolute URLs to avoid routing issues in production
-    // This prevents the API requests from being intercepted by SPA routing
-    const baseUrl = window.location.origin;
-    const apiUrl = url.startsWith('http') 
-                 ? url 
-                 : url.startsWith('/') 
-                   ? `${baseUrl}${url}` 
-                   : `${baseUrl}/${url}`;
+    // Ensure the URL is relative to the current domain in production
+    // This prevents issues with absolute paths in deployed environments
+    const apiUrl = url.startsWith('http') ? url : url.startsWith('/') ? url : `/${url}`;
 
     console.log("Making API request to:", apiUrl);
 
@@ -172,24 +167,14 @@ export function getQueryFn<TData>(options: {
       console.warn("Using fallback URL:", url);
     }
 
-    // Use absolute URLs to avoid routing issues in production
-    // This prevents the API requests from being intercepted by SPA routing
-    const baseUrl = window.location.origin;
-    const apiUrl = url.startsWith('http') 
-                 ? url 
-                 : url.startsWith('/') 
-                   ? `${baseUrl}${url}` 
-                   : `${baseUrl}/${url}`;
+    // Ensure the URL is relative to the current domain in production
+    // This prevents issues with absolute paths in deployed environments
+    const apiUrl = url.startsWith('http') ? url : url.startsWith('/') ? url : `/${url}`;
 
     console.log("API Request URL:", apiUrl);
 
     const res = await fetch(apiUrl, {
       credentials: "include",
-      headers: {
-        'Accept': 'application/json',
-        'Cache-Control': 'no-cache',
-        'Pragma': 'no-cache'
-      },
     });
 
     // Log response status to help with debugging

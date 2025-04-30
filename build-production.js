@@ -97,18 +97,10 @@ if (indexContent) {
 }
 
 // Start the original server using tsx (Direct execution of TypeScript)
-// We add a special flag to indicate that this is running in production mode
-// and that API routes should be handled before the static file serving
-process.env.API_ROUTES_FIRST = 'true';
-
 // We use a spawn to execute tsx because it's not directly importable
 const server = spawn('npx', ['tsx', 'server/index.ts'], {
   stdio: 'inherit',
-  env: { 
-    ...process.env, 
-    NODE_ENV: 'production',
-    API_ROUTES_FIRST: 'true'  // Ensure this env var is passed to the child process
-  }
+  env: { ...process.env, NODE_ENV: 'production' }
 });
 
 // Handle exit
@@ -186,17 +178,10 @@ function runServer() {
     buildApp();
   }
   
-  // Set special flag to ensure API routes are handled first
-  process.env.API_ROUTES_FIRST = 'true';
-
   // Start the modified server
   const server = spawn('node', [modifiedServerPath], {
     stdio: 'inherit',
-    env: { 
-      ...process.env, 
-      NODE_ENV: 'production',
-      API_ROUTES_FIRST: 'true'  // This ensures API routes are registered before the static file catch-all
-    }
+    env: { ...process.env, NODE_ENV: 'production' }
   });
   
   server.on('error', (err) => {
@@ -206,11 +191,7 @@ function runServer() {
     // Fallback: Try to run the server directly with tsx
     const directServer = spawn('npx', ['tsx', 'server/index.ts'], {
       stdio: 'inherit',
-      env: { 
-        ...process.env, 
-        NODE_ENV: 'production',
-        API_ROUTES_FIRST: 'true'  // This ensures API routes are registered before the static file catch-all
-      }
+      env: { ...process.env, NODE_ENV: 'production' }
     });
     
     directServer.on('error', (directErr) => {

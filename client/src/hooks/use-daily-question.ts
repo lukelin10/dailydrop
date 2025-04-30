@@ -38,33 +38,21 @@ export function useDailyQuestion() {
   useEffect(() => {
     // Only perform direct fetch if React Query hasn't provided data yet
     if (!queryResult.data && !question) {
-      const fetchQuestion = async (attempt = 1) => {
+      const fetchQuestion = async () => {
         try {
           setLoading(true);
-          console.log(`🔍 Direct fetch starting... (attempt ${attempt})`);
-          
-          // Use standard API path with a cache-busting query parameter
-          const timestamp = Date.now();
-          const url = `/api/question?_t=${timestamp}`;
-          console.log("📡 Using absolute URL:", url);
-          
-          const response = await fetch(url, {
+          console.log("🔍 Direct fetch starting...");
+          const response = await fetch('/api/question', {
             credentials: 'include',
             headers: {
-              'Accept': 'application/json',
-              'Cache-Control': 'no-cache, no-store, must-revalidate',
-              'Pragma': 'no-cache',
-              'Expires': '0'
+              'Cache-Control': 'no-cache',
+              'Pragma': 'no-cache'
             }
           });
           
           if (!response.ok) {
             throw new Error(`Failed to fetch question: ${response.status} ${response.statusText}`);
           }
-          
-          // Log content type for debugging
-          const contentType = response.headers.get('content-type');
-          console.log("📄 Response content type:", contentType);
           
           const text = await response.text(); // First get as text for debugging
           console.log("📡 Raw API response:", text);
