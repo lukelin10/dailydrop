@@ -69,12 +69,6 @@ const __dirname = path.dirname(__filename);
   }
 });
 
-// Fix for API routes in production - ensure correct content-type header
-app.use('/api/', (req, res, next) => {
-  res.set('Content-Type', 'application/json');
-  next();
-});
-
 // Copy index.html to all required locations
 const indexPaths = [
   path.resolve(__dirname, '..', 'client/index.html'),

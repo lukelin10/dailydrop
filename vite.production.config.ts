@@ -11,24 +11,7 @@ const __dirname = dirname(__filename);
 // This configuration extends the standard vite config
 // but disables minification to prevent the "i.find is not a function" error
 export default defineConfig({
-  plugins: [
-    react(), 
-    runtimeErrorOverlay(), 
-    themePlugin(),
-    {
-      name: 'configure-server',
-      configureServer(server) {
-        server.middlewares.use((req, res, next) => {
-          // Skip API requests to prevent them from being served as static HTML
-          if (req.url?.startsWith('/api/')) {
-            console.log('API request detected in production Vite config:', req.url);
-            return next();
-          }
-          next();
-        });
-      }
-    }
-  ],
+  plugins: [react(), runtimeErrorOverlay(), themePlugin()],
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "client", "src"),
