@@ -151,7 +151,7 @@ export default function ChatInterface({ entryId, question, answer, onEndChat }: 
                 type="submit"
                 size="icon"
                 disabled={isChatEnded || sendMessageMutation.isPending}
-                className="primary-button"
+                className="primary-button active-button"
               >
                 {sendMessageMutation.isPending ? (
                   <Loader2 className="h-4 w-4 animate-spin" />

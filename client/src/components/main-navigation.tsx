@@ -45,8 +45,8 @@ export default function MainNavigation() {
                 className={cn(
                   "px-4 py-2 rounded-md flex items-center text-sm font-medium transition-colors",
                   location === item.path
-                    ? "bg-primary text-primary-foreground"
-                    : "text-secondary hover:bg-secondary hover:text-secondary-foreground",
+                    ? "bg-primary text-white active-nav-item" 
+                    : "text-secondary hover:bg-secondary/20 hover:text-primary",
                 )}
               >
                 {item.icon}
@@ -65,8 +65,8 @@ export default function MainNavigation() {
               className={cn(
                 "w-12 h-12 flex flex-col items-center justify-center rounded-md text-xs font-medium transition-colors",
                 location === item.path
-                  ? "bg-primary text-primary-foreground"
-                  : "text-secondary hover:bg-secondary hover:text-secondary-foreground",
+                  ? "bg-primary text-white active-nav-item"
+                  : "text-secondary hover:bg-secondary/20 hover:text-primary",
               )}
             >
               {item.icon}

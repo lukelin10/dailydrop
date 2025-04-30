@@ -77,10 +77,42 @@ body {
   color: hsl(0, 0%, 98%) !important;
 }
 
+.primary-button svg {
+  color: white !important;
+}
+
 /* Secondary buttons */
 .secondary-button {
   background-color: hsl(82, 40%, 30%) !important; /* Deep Olive */
   color: hsl(37, 35%, 93%) !important; /* Warm Cream */
+}
+
+.secondary-button svg {
+  color: hsl(37, 35%, 93%) !important; /* Warm Cream */
+}
+
+/* Icon visibility in active/selected buttons */
+button[class*='bg-primary'] svg,
+a[class*='bg-primary'] svg,
+.active-nav-item svg,
+.active-button svg {
+  color: white !important;
+  fill: white !important;
+  stroke: white !important;
+}
+
+/* Icon styling for better visibility */
+button svg, 
+a svg,
+.icon {
+  stroke-width: 2px !important;
+}
+
+/* Icon color for buttons and navigation items */
+.text-secondary:hover svg,
+.hover\:text-primary:hover svg {
+  color: hsl(20, 45%, 57%) !important; /* Soft Terracotta */
+  stroke: hsl(20, 45%, 57%) !important; /* Soft Terracotta */
 }
 
 /* Cards and containers */
