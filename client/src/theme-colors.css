@@ -1,11 +1,11 @@
 :root {
-  /* Primary Color: Soft Terracotta (#D27D52) */
-  --primary: 20 45% 57%;
-  --primary-foreground: 0 0% 98%;
+  /* Primary Color: Deeper Terracotta (#C05A2E) */
+  --primary: 20 62% 47%;
+  --primary-foreground: 0 0% 100%;
   
-  /* Secondary Color: Deep Olive (#556B2F) */
-  --secondary: 82 40% 30%;
-  --secondary-foreground: 0 0% 98%;
+  /* Secondary Color: Darker Olive (#445823) */
+  --secondary: 82 45% 24%;
+  --secondary-foreground: 0 0% 100%;
   
   /* Accent Color: Warm Cream (#F5EFE6) */
   --accent: 37 35% 93%;
@@ -61,34 +61,46 @@ body {
 
 /* Chat message bubbles - user */
 .user-message {
-  background-color: hsl(20, 45%, 57%) !important; /* Soft Terracotta */
-  color: hsl(0, 0%, 98%) !important;
+  background-color: hsl(20, 62%, 47%) !important; /* Deeper Terracotta */
+  color: white !important;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2) !important;
 }
 
 /* Chat message bubbles - bot */
 .bot-message {
-  background-color: hsl(82, 40%, 30%) !important; /* Deep Olive */
-  color: hsl(37, 35%, 93%) !important; /* Warm Cream */
+  background-color: hsl(82, 45%, 24%) !important; /* Darker Olive */
+  color: white !important; /* Pure white for best contrast */
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2) !important;
 }
 
 /* Primary buttons */
 .primary-button {
-  background-color: hsl(20, 45%, 57%) !important; /* Soft Terracotta */
-  color: hsl(0, 0%, 98%) !important;
+  background-color: hsl(20, 62%, 47%) !important; /* Deeper Terracotta */
+  color: white !important; /* Pure white for best contrast */
+  font-weight: 600 !important;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2) !important;
 }
 
 .primary-button svg {
   color: white !important;
+  stroke: white !important;
+  fill: white !important;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.2)) !important;
 }
 
 /* Secondary buttons */
 .secondary-button {
-  background-color: hsl(82, 40%, 30%) !important; /* Deep Olive */
-  color: hsl(37, 35%, 93%) !important; /* Warm Cream */
+  background-color: hsl(82, 45%, 24%) !important; /* Darker Olive */
+  color: white !important; /* Pure white for best contrast */
+  font-weight: 600 !important;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2) !important;
 }
 
 .secondary-button svg {
-  color: hsl(37, 35%, 93%) !important; /* Warm Cream */
+  color: white !important;
+  stroke: white !important;
+  fill: white !important;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.2)) !important;
 }
 
 /* Icon visibility in active/selected buttons */
@@ -99,6 +111,16 @@ a[class*='bg-primary'] svg,
   color: white !important;
   fill: white !important;
   stroke: white !important;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3)) !important;
+}
+
+/* Active navigation items - stronger contrast */
+.active-nav-item,
+button[class*='bg-primary'],
+a[class*='bg-primary'] {
+  color: white !important;
+  font-weight: 600 !important;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3) !important;
 }
 
 /* Icon styling for better visibility */
@@ -111,8 +133,8 @@ a svg,
 /* Icon color for buttons and navigation items */
 .text-secondary:hover svg,
 .hover\:text-primary:hover svg {
-  color: hsl(20, 45%, 57%) !important; /* Soft Terracotta */
-  stroke: hsl(20, 45%, 57%) !important; /* Soft Terracotta */
+  color: hsl(20, 62%, 47%) !important; /* Deeper Terracotta */
+  stroke: hsl(20, 62%, 47%) !important; /* Deeper Terracotta */
 }
 
 /* Cards and containers */
@@ -124,7 +146,7 @@ a svg,
 
 /* Text styling */
 h1, h2, h3, h4, h5, h6 {
-  color: hsl(20, 45%, 57%) !important; /* Soft Terracotta */
+  color: hsl(20, 62%, 47%) !important; /* Deeper Terracotta */
 }
 
 /* Form elements */
@@ -135,17 +157,17 @@ input, textarea, select {
 }
 
 input:focus, textarea:focus, select:focus {
-  border-color: hsl(20, 45%, 57%) !important; /* Soft Terracotta */
-  outline-color: hsl(20, 45%, 57%) !important; /* Soft Terracotta */
+  border-color: hsl(20, 62%, 47%) !important; /* Deeper Terracotta */
+  outline-color: hsl(20, 62%, 47%) !important; /* Deeper Terracotta */
 }
 
 /* Links */
 a {
-  color: hsl(20, 45%, 57%) !important; /* Soft Terracotta */
+  color: hsl(20, 62%, 47%) !important; /* Deeper Terracotta */
 }
 
 a:hover {
-  color: hsl(82, 40%, 30%) !important; /* Deep Olive */
+  color: hsl(82, 45%, 24%) !important; /* Darker Olive */
 }
 
 /* Badge/Tag elements */
