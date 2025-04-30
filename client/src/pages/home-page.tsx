@@ -40,27 +40,51 @@ export default function HomePage() {
     queryKey: ["/api/question"],
   });
 
-  // Create a fallback question in case the data structure is corrupted in production
-  const questionText = typeof dailyQuestion === 'object' && dailyQuestion !== null && 'question' in dailyQuestion
-    ? String(dailyQuestion.question)
-    : "What's on your mind today?";
-
-  // Log question data for debugging
+  // We'll implement our own question fetching logic
+  const [directQuestion, setDirectQuestion] = useState<string | null>(null);
+  
+  // Directly fetch the question from the API to bypass any React Query caching issues
   useEffect(() => {
-    console.log("Daily question state:", {
-      dailyQuestion,
-      questionText,
-      rawData: JSON.stringify(dailyQuestion),
-      type: typeof dailyQuestion,
-      hasQuestion: dailyQuestion && typeof dailyQuestion === 'object' && 'question' in dailyQuestion
-    });
-  }, [dailyQuestion, questionText]);
+    async function fetchQuestion() {
+      try {
+        console.log("Starting direct fetch of question...");
+        const response = await fetch('/api/question', {
+          credentials: 'include'
+        });
+        
+        console.log("Direct fetch response:", response.status, response.statusText);
+        
+        if (response.ok) {
+          const data = await response.json();
+          console.log("Direct fetch question data:", data);
+          
+          if (data && data.question) {
+            console.log("Setting direct question to:", data.question);
+            setDirectQuestion(data.question);
+          } else {
+            console.warn("Question data missing or invalid:", data);
+          }
+        } else {
+          console.error("Failed to fetch question:", response.status, response.statusText);
+        }
+      } catch (err) {
+        console.error('Error fetching question directly:', err);
+      }
+    }
+    
+    fetchQuestion();
+  }, []);
 
   const createEntryMutation = useMutation({
     mutationFn: async (answer: string) => {
-      // Use questionText fallback for question and default the questionId if needed
+      // Use directQuestion or from dailyQuestion object
+      const questionToUse = directQuestion || 
+                           (dailyQuestion && typeof dailyQuestion === 'object' && 'question' in dailyQuestion
+                            ? dailyQuestion.question
+                            : "Today's question");
+      
       const data = {
-        question: questionText,
+        question: questionToUse,
         questionId: (dailyQuestion && typeof dailyQuestion === 'object' && 'questionId' in dailyQuestion) 
                     ? dailyQuestion.questionId : 1,
         answer,
@@ -158,7 +182,10 @@ export default function HomePage() {
               {!todayEntry ? (
                 <div className="space-y-4 rounded-lg p-6 bg-card text-card-foreground card-container">
                   <p className="text-lg font-medium text-accent-foreground">
-                    {questionText}
+                    {directQuestion || 
+                     (dailyQuestion && typeof dailyQuestion === 'object' && 'question' in dailyQuestion ? 
+                      dailyQuestion.question : 
+                      "Today's question is loading...")}
                   </p>
                   <Editor
                     onSave={(answer) => createEntryMutation.mutate(answer)}
