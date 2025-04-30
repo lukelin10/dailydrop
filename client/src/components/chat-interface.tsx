@@ -27,6 +27,9 @@ export default function ChatInterface({ entryId, question, answer, onEndChat }: 
   const { data: messages = [], isLoading: messagesLoading } = useQuery<ChatMessage[]>({
     queryKey: [`/api/entries/${entryId}/chat`],
   });
+  
+  // Ensure messages is always an array
+  const safeMessages = ensureArray<ChatMessage>(messages);
 
   const sendMessageMutation = useMutation({
     mutationFn: async (message: string) => {
@@ -64,11 +67,11 @@ export default function ChatInterface({ entryId, question, answer, onEndChat }: 
   // Scroll to bottom when messages change or after sending a message
   useEffect(() => {
     scrollToBottom();
-  }, [messages, sendMessageMutation.isSuccess]);
+  }, [safeMessages, sendMessageMutation.isSuccess]);
 
   useEffect(() => {
     // Send the initial message (user's answer) when the chat first loads
-    if (isInitializing && !messagesLoading && messages.length === 0) {
+    if (isInitializing && !messagesLoading && safeMessages.length === 0) {
       console.log("Sending initial message to DropBot:", answer);
       if (answer && answer.trim()) {
         sendMessageMutation.mutate(answer);
@@ -77,7 +80,7 @@ export default function ChatInterface({ entryId, question, answer, onEndChat }: 
       }
       setIsInitializing(false);
     }
-  }, [isInitializing, messagesLoading, messages.length, answer, sendMessageMutation]);
+  }, [isInitializing, messagesLoading, safeMessages.length, answer, sendMessageMutation]);
 
   const handleEndChat = () => {
     setIsChatEnded(true);
@@ -112,7 +115,7 @@ export default function ChatInterface({ entryId, question, answer, onEndChat }: 
               <Loader2 className="h-6 w-6 animate-spin" />
             </div>
           ) : (
-            messages.map((message) => (
+            safeMessages.map((message) => (
               <div
                 key={message.id}
                 className={`flex ${
@@ -139,7 +142,7 @@ export default function ChatInterface({ entryId, question, answer, onEndChat }: 
       </ScrollArea>
 
       <div className="p-4 border-t">
-        {messages.length < MESSAGE_LIMIT ? (
+        {safeMessages.length < MESSAGE_LIMIT ? (
           <form onSubmit={onSubmit} className="flex gap-2">
             <Textarea
               {...form.register("message")}

@@ -16,11 +16,15 @@ import { Loader2 } from "lucide-react";
 import { Link } from "wouter";
 import { useState } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { ensureArray } from "@/lib/utils";
+import { Analysis } from "@shared/schema";
 
 export default function DropCounter() {
   // Fetch data about unanalyzed entries and existing analyses
   const { data: countData, isLoading: isCountLoading } = useUnanalyzedEntriesCount();
   const { data: analyses } = useAnalyses();
+  // Ensure analyses is always an array
+  const safeAnalyses = ensureArray<Analysis>(analyses);
   const createAnalysisMutation = useCreateAnalysis();
   const [latestAnalysisId, setLatestAnalysisId] = useState<number | null>(null);
   const { toast } = useToast();
@@ -82,8 +86,8 @@ export default function DropCounter() {
   }
   
   // For users who already have at least one previous analysis
-  if (analyses && analyses.length > 0) {
-    const latestAnalysis = analyses[0]; // Analyses are ordered by createdAt desc
+  if (safeAnalyses.length > 0) {
+    const latestAnalysis = safeAnalyses[0]; // Analyses are ordered by createdAt desc
     
     return (
       <div className="flex flex-col items-end gap-1">
