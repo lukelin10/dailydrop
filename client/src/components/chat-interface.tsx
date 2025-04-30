@@ -7,6 +7,7 @@ import { ChatMessage } from "@shared/schema";
 import { useForm } from "react-hook-form";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
+import { ensureArray } from "@/lib/utils";
 
 interface ChatInterfaceProps {
   entryId: number;

@@ -4,6 +4,7 @@ import { Loader2 } from "lucide-react";
 import MainNavigation from "@/components/main-navigation";
 import { Link } from "wouter";
 import { Analysis } from "@shared/schema";
+import { ensureArray } from "@/lib/utils";
 
 // Helper to generate a short summary from analysis content
 function generateShortSummary(content: string): string {
@@ -15,6 +16,9 @@ function generateShortSummary(content: string): string {
 
 export default function SeekPage() {
   const { data: analyses = [], isLoading } = useAnalyses();
+  
+  // Ensure analyses is always an array
+  const safeAnalyses = ensureArray<Analysis>(analyses);
   
   if (isLoading) {
     return (
@@ -35,7 +39,7 @@ export default function SeekPage() {
         <div className="max-w-3xl mx-auto space-y-6">
           <h1 className="text-2xl font-bold text-accent-foreground">Your Insights</h1>
           
-          {analyses.length === 0 ? (
+          {safeAnalyses.length === 0 ? (
             <div className="text-center py-12 border border-primary/30 rounded-lg bg-card text-card-foreground shadow-md">
               <h3 className="text-lg font-medium">No insights yet</h3>
               <p className="text-accent-foreground/80 mt-2">
@@ -45,7 +49,7 @@ export default function SeekPage() {
             </div>
           ) : (
             <div className="grid gap-4">
-              {analyses.map((analysis) => (
+              {safeAnalyses.map((analysis) => (
                 <AnalysisCard key={analysis.id} analysis={analysis} />
               ))}
             </div>
