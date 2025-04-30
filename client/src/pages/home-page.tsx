@@ -137,7 +137,15 @@ export default function HomePage() {
             <div className="space-y-6 slide-up">
               {!todayEntry ? (
                 <div className="space-y-4 rounded-lg p-6 bg-card text-card-foreground card-container">
-                  <p className="text-lg font-medium">{dailyQuestion?.question}</p>
+                  {dailyQuestion?.question ? (
+                    <p className="text-lg font-medium text-accent-foreground">
+                      {dailyQuestion.question}
+                    </p>
+                  ) : (
+                    <p className="text-lg font-medium text-accent-foreground">
+                      Loading today's question...
+                    </p>
+                  )}
                   <Editor
                     onSave={(answer) => createEntryMutation.mutate(answer)}
                     loading={createEntryMutation.isPending}
@@ -146,7 +154,7 @@ export default function HomePage() {
               ) : (
                 <div className="space-y-4 rounded-lg p-6 bg-card text-card-foreground card-container">
                   <div className="flex items-center justify-between mb-2">
-                    <p className="text-lg font-medium">{todayEntry.question}</p>
+                    <p className="text-lg font-medium text-accent-foreground">{todayEntry.question}</p>
                     <div className="text-sm text-white bg-secondary px-2 py-1 rounded-md">
                       Already answered today
                     </div>
